@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DWS Maker",
-  description: "A clean declaration-of-work schedule builder for faculty workload planning.",
+  title: "DWS Maker – Declaration of Work Schedule",
+  description: "Plan a faculty weekly schedule and download the Declaration of Work Schedule form (PNC:AF-FO-96).",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -23,7 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full bg-white text-gray-900">{children}</body>
     </html>
   );
 }
