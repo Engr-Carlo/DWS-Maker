@@ -40,9 +40,15 @@ import {
   type DwsState,
   type Profile,
   type Signoff,
+  type Assignment,
+  type SubjectKind,
   type Subject,
 } from "@/lib/dws";
 import { exportDocx } from "@/lib/docx-export";
+import { exportAssignments } from "@/lib/assignment-export";
+import { hasSubjects } from "@/lib/assignment";
+import { AssignmentPanel } from "./assignment-panel";
+import { AssignmentSheet } from "./assignment-sheet";
 import { FormSheet, PreviewPane } from "./form-sheet";
 import { ScheduleGrid } from "./schedule-grid";
 import { Sidebar } from "./sidebar";
@@ -136,7 +142,7 @@ function Workspace() {
   const [state, setState] = useState<DwsState>(loadState);
   const [brush, setBrush] = useState(() => defaultBrush(state));
   const [previousBrush, setPreviousBrush] = useState(brush);
-  const [view, setView] = useState<"schedule" | "preview">("schedule");
+  const [view, setView] = useState<"schedule" | "preview" | "assignment">("schedule");
   const [past, setPast] = useState<Cells[]>([]);
   const [future, setFuture] = useState<Cells[]>([]);
   const [exporting, setExporting] = useState(false);
@@ -300,6 +306,20 @@ function Workspace() {
     }
   };
 
+  const downloadAssignments = async (kinds: SubjectKind[]) => {
+    setExporting(true);
+    try {
+      await exportAssignments(state, kinds);
+    } catch {
+      window.alert("Sorry, the Word file could not be created. Please try again.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const updateAssignment = (patch: Partial<Assignment>) =>
+    setState((s) => ({ ...s, assignment: { ...s.assignment, ...patch } }));
+
   const brushInfo = (() => {
     if (brush === ERASER) return { label: "Eraser", color: "#9CA3AF" };
     const res = resolveBrush(brush, subjects);
@@ -325,6 +345,7 @@ function Workspace() {
               [
                 ["schedule", "Schedule"],
                 ["preview", "Form preview"],
+                ["assignment", "Teaching assignment"],
               ] as const
             ).map(([id, label]) => (
               <button
@@ -358,7 +379,7 @@ function Workspace() {
             </Button>
             <Button variant="primary" onClick={download} disabled={exporting}>
               <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">{exporting ? "Preparing…" : "Download .docx"}</span>
+              <span className="hidden sm:inline">{exporting ? "Preparing…" : "Download DWS"}</span>
             </Button>
             <input ref={fileInput} type="file" accept=".json,application/json" className="hidden" onChange={openBackup} />
           </div>
@@ -381,6 +402,8 @@ function Workspace() {
           <main className="min-w-0 flex-1">
             {view === "preview" ? (
               <PreviewPane state={state} />
+            ) : view === "assignment" ? (
+              <AssignmentPanel state={state} busy={exporting} onSubject={updateSubject} onAssignment={updateAssignment} onDownload={downloadAssignments} />
             ) : (
               <div className="mx-auto max-w-[1100px] space-y-4 p-4 sm:p-6">
                 {showGuide && (
@@ -467,7 +490,17 @@ function Workspace() {
       </div>
 
       <div className="hidden print:block">
-        <FormSheet state={state} />
+        {view === "assignment" ? (
+          (["regular", "overload"] as const)
+            .filter((kind) => hasSubjects(state, kind))
+            .map((kind) => (
+              <div key={kind} className="break-after-page last:break-after-auto">
+                <AssignmentSheet state={state} kind={kind} />
+              </div>
+            ))
+        ) : (
+          <FormSheet state={state} />
+        )}
       </div>
     </>
   );

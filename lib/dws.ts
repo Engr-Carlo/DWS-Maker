@@ -59,6 +59,7 @@ export const CATEGORY_BY_ID = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]
 export const ACTIVITY_IDS: CategoryId[] = ["research", "extension", "consultation", "quasi", "admin", "break"];
 
 export type SubjectKind = "regular" | "overload";
+export type Component = "lec" | "lab";
 
 export interface Subject {
   id: string;
@@ -66,6 +67,11 @@ export interface Subject {
   section: string;
   hours: number;
   kind: SubjectKind;
+  title: string;
+  component: Component;
+  room: string;
+  /** Effectivity of this class on the teaching assignment; falls back to the DWS effectivity date. */
+  startDate: string;
 }
 
 export interface Profile {
@@ -85,12 +91,30 @@ export interface Signoff {
   approverTitle: string;
 }
 
+/** Details only needed by the teaching assignment memos (PNC:AA-FO-11). */
+export interface Assignment {
+  date: string;
+  final: boolean;
+  toName: string;
+  fromName: string;
+  fromTitle: string;
+  vpName: string;
+  vpTitle: string;
+  employment: string;
+  conformeName: string;
+  bachelor: string;
+  masteral: string;
+  doctorate: string;
+  consultRoom: string;
+}
+
 /** Maps "day-slot" (e.g. "0-6") to a brush id. */
 export type Cells = Record<string, string>;
 
 export interface DwsState {
   profile: Profile;
   signoff: Signoff;
+  assignment: Assignment;
   subjects: Subject[];
   cells: Cells;
   includeBreak: boolean;
@@ -223,13 +247,39 @@ export function newId(): string {
 }
 
 export function newSubject(kind: SubjectKind = "regular"): Subject {
-  return { id: newId(), code: "", section: "", hours: 3, kind };
+  return { id: newId(), code: "", section: "", hours: 3, kind, title: "", component: "lec", room: "", startDate: "" };
 }
 
 function currentAcademicYear(): string {
   const now = new Date();
   const start = now.getMonth() >= 5 ? now.getFullYear() : now.getFullYear() - 1;
   return `${start}-${start + 1}`;
+}
+
+function todayIso(): string {
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+export const VP_TITLE = "Vice President for Academic Affairs and Student Services";
+
+export function defaultAssignment(): Assignment {
+  return {
+    date: todayIso(),
+    final: true,
+    toName: "",
+    fromName: "",
+    fromTitle: "Dean",
+    vpName: "",
+    vpTitle: VP_TITLE,
+    employment: "FT",
+    conformeName: "",
+    bachelor: "",
+    masteral: "",
+    doctorate: "",
+    consultRoom: "",
+  };
 }
 
 export function defaultState(): DwsState {
@@ -244,6 +294,7 @@ export function defaultState(): DwsState {
       effectivityDate: "",
     },
     signoff: { endorserName: "", endorserTitle: "Program Chair", approverName: "", approverTitle: "Dean / VPASS" },
+    assignment: defaultAssignment(),
     subjects: [],
     cells: {},
     includeBreak: false,
@@ -265,12 +316,12 @@ export function isBlank(state: DwsState): boolean {
 
 export function exampleState(): DwsState {
   const subjects: Subject[] = [
-    { id: "ex-1", code: "CPP118", section: "4CPEB", hours: 6, kind: "regular" },
-    { id: "ex-2", code: "CPP117", section: "4CPEA", hours: 6, kind: "regular" },
-    { id: "ex-3", code: "CPP117", section: "4CPEB", hours: 6, kind: "regular" },
-    { id: "ex-4", code: "CPP118", section: "4CPEA", hours: 6, kind: "regular" },
-    { id: "ex-5", code: "CPP118", section: "4CPEC", hours: 6, kind: "overload" },
-    { id: "ex-6", code: "CPP117", section: "4CPEC", hours: 6, kind: "overload" },
+    { id: "ex-1", code: "CPP118", section: "4CPEB", hours: 6, kind: "regular", title: "Software Design", component: "lec", room: "302", startDate: "" },
+    { id: "ex-2", code: "CPP117", section: "4CPEA", hours: 6, kind: "regular", title: "Embedded Systems", component: "lab", room: "Comlab 5", startDate: "" },
+    { id: "ex-3", code: "CPP117", section: "4CPEB", hours: 6, kind: "regular", title: "Embedded Systems", component: "lab", room: "Comlab 5", startDate: "" },
+    { id: "ex-4", code: "CPP118", section: "4CPEA", hours: 6, kind: "regular", title: "Software Design", component: "lec", room: "302", startDate: "" },
+    { id: "ex-5", code: "CPP118", section: "4CPEC", hours: 6, kind: "overload", title: "Software Design", component: "lec", room: "BCH302", startDate: "" },
+    { id: "ex-6", code: "CPP117", section: "4CPEC", hours: 6, kind: "overload", title: "Embedded Systems", component: "lab", room: "Comlab 5", startDate: "" },
   ];
   const cells: Cells = {};
   const fill = (day: number, from: number, to: number, brush: string) => {
@@ -304,6 +355,17 @@ export function exampleState(): DwsState {
       approverName: "Dr. Pedro Garcia / Dr. Luis Mendoza",
       approverTitle: "Dean / VPASS",
     },
+    assignment: {
+      ...defaultAssignment(),
+      toName: "Dela Cruz, Juan D.",
+      fromName: "DR. PEDRO GARCIA",
+      fromTitle: "Dean, College of Engineering",
+      vpName: "Dr. Luis Mendoza",
+      conformeName: "Engr. Juan D. Dela Cruz",
+      bachelor: "BS IN COMPUTER ENGINEERING",
+      masteral: "Master of Science in Computer Engineering",
+      consultRoom: "COE Office",
+    },
     subjects,
     cells,
     includeBreak: false,
@@ -323,6 +385,8 @@ export function sanitizeState(raw: unknown): DwsState | null {
   const base = defaultState();
   const p = (r.profile && typeof r.profile === "object" ? r.profile : {}) as Record<string, unknown>;
   const so = (r.signoff && typeof r.signoff === "object" ? r.signoff : {}) as Record<string, unknown>;
+  const a = (r.assignment && typeof r.assignment === "object" ? r.assignment : {}) as Record<string, unknown>;
+  const baseA = base.assignment;
 
   const subjects: Subject[] = Array.isArray(r.subjects)
     ? r.subjects.flatMap((item) => {
@@ -331,7 +395,20 @@ export function sanitizeState(raw: unknown): DwsState | null {
         if (typeof s.id !== "string" || !s.id) return [];
         const hours = typeof s.hours === "number" && Number.isFinite(s.hours) && s.hours >= 0 ? s.hours : 3;
         const kind: SubjectKind = s.kind === "overload" ? "overload" : "regular";
-        return [{ id: s.id, code: text(s.code, ""), section: text(s.section, ""), hours, kind }];
+        const component: Component = s.component === "lab" ? "lab" : "lec";
+        return [
+          {
+            id: s.id,
+            code: text(s.code, ""),
+            section: text(s.section, ""),
+            hours,
+            kind,
+            title: text(s.title, ""),
+            component,
+            room: text(s.room, ""),
+            startDate: text(s.startDate, ""),
+          },
+        ];
       })
     : [];
 
@@ -357,6 +434,21 @@ export function sanitizeState(raw: unknown): DwsState | null {
       endorserTitle: text(so.endorserTitle, base.signoff.endorserTitle),
       approverName: text(so.approverName, ""),
       approverTitle: text(so.approverTitle, base.signoff.approverTitle),
+    },
+    assignment: {
+      date: text(a.date, baseA.date),
+      final: a.final === false ? false : true,
+      toName: text(a.toName, ""),
+      fromName: text(a.fromName, ""),
+      fromTitle: text(a.fromTitle, baseA.fromTitle),
+      vpName: text(a.vpName, ""),
+      vpTitle: text(a.vpTitle, baseA.vpTitle),
+      employment: text(a.employment, baseA.employment),
+      conformeName: text(a.conformeName, ""),
+      bachelor: text(a.bachelor, ""),
+      masteral: text(a.masteral, ""),
+      doctorate: text(a.doctorate, ""),
+      consultRoom: text(a.consultRoom, ""),
     },
     subjects,
     cells,

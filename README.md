@@ -13,7 +13,18 @@ There is no account and no server-side storage. Everything stays in your browser
 3. Click or drag across the grid to place it. Click a placed slot again, or use the eraser, to clear it.
 4. **Other activities** – research, extension, consultation, quasi, administrative and breaks work the same way.
 5. **Sign-off** – endorser and approver names and titles.
-6. Check the **Form preview** tab, then **Download .docx** or **Print**.
+6. Check the **Form preview** tab, then **Download DWS** or **Print**.
+
+### Teaching assignment letters
+
+The **Teaching assignment** tab fills in the two memos (form PNC:AA-FO-11) straight from your schedule:
+
+- **Regular load** – every subject marked *Regular* (normally 24 hours).
+- **Overload** – every subject marked *Overload*.
+
+Days, times, hours and the consultation schedule come from the grid. You only add each class's descriptive title, room,
+Lec/Lab type and effectivity date, plus the memo details (dean, VP, degrees). Lecture units equal contact hours; one lab
+unit equals 3 hours. Download each letter as a `.docx`, download both at once, or print them.
 
 Handy details:
 
@@ -44,9 +55,13 @@ deploy with the default settings.
 | `components/dws-app.tsx` | Page layout, undo/redo, file menu, downloads |
 | `components/schedule-grid.tsx` | The click-and-drag weekly grid |
 | `components/sidebar.tsx` | Details, subjects, activities and sign-off forms |
-| `components/form-sheet.tsx` | On-screen form preview and print layout |
+| `components/form-sheet.tsx` | On-screen DWS form preview and print layout |
+| `components/assignment-panel.tsx` | Teaching assignment tab (class details, memo details, preview) |
+| `components/assignment-sheet.tsx` | On-screen and print layout of the teaching assignment memo |
 | `lib/dws.ts` | Types, hour calculations, example data, saving and loading |
-| `lib/docx-build.ts` | Builds the Word document that matches the official form |
+| `lib/assignment.ts` | Turns the schedule grid into class rows, consultation rows and totals |
+| `lib/docx-build.ts` | Builds the DWS Word document that matches the official form |
+| `lib/assignment-docx.ts` | Builds the teaching assignment Word documents |
 | `public/form/` | University seal and tagline used on the form |
 
 ## Notes
