@@ -47,7 +47,7 @@ import {
 import { exportDocx } from "@/lib/docx-export";
 import { exportAssignments } from "@/lib/assignment-export";
 import { hasSubjects } from "@/lib/assignment";
-import { AssignmentPanel } from "./assignment-panel";
+import { AssignmentPanel, AssignmentPreviewPanel } from "./assignment-panel";
 import { AssignmentSheet } from "./assignment-sheet";
 import { FormSheet, PreviewPane } from "./form-sheet";
 import { ScheduleGrid } from "./schedule-grid";
@@ -142,7 +142,7 @@ function Workspace() {
   const [state, setState] = useState<DwsState>(loadState);
   const [brush, setBrush] = useState(() => defaultBrush(state));
   const [previousBrush, setPreviousBrush] = useState(brush);
-  const [view, setView] = useState<"schedule" | "preview" | "assignment">("schedule");
+  const [view, setView] = useState<"schedule" | "preview" | "assignment" | "assignment-preview">("schedule");
   const [past, setPast] = useState<Cells[]>([]);
   const [future, setFuture] = useState<Cells[]>([]);
   const [exporting, setExporting] = useState(false);
@@ -346,6 +346,7 @@ function Workspace() {
                 ["schedule", "Schedule"],
                 ["preview", "Form preview"],
                 ["assignment", "Teaching assignment"],
+                ["assignment-preview", "Teaching assignment preview"],
               ] as const
             ).map(([id, label]) => (
               <button
@@ -404,6 +405,8 @@ function Workspace() {
               <PreviewPane state={state} />
             ) : view === "assignment" ? (
               <AssignmentPanel state={state} busy={exporting} onSubject={updateSubject} onAssignment={updateAssignment} onDownload={downloadAssignments} />
+            ) : view === "assignment-preview" ? (
+              <AssignmentPreviewPanel state={state} />
             ) : (
               <div className="mx-auto max-w-[1100px] space-y-4 p-4 sm:p-6">
                 {showGuide && (
@@ -490,7 +493,7 @@ function Workspace() {
       </div>
 
       <div className="hidden print:block">
-        {view === "assignment" ? (
+        {view === "assignment" || view === "assignment-preview" ? (
           (["regular", "overload"] as const)
             .filter((kind) => hasSubjects(state, kind))
             .map((kind) => (

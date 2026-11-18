@@ -133,10 +133,8 @@ function LoadCard({ state, kind, busy, onDownload }: { state: DwsState; kind: Su
 }
 
 export function AssignmentPanel({ state, busy, onSubject, onAssignment, onDownload }: PanelProps) {
-  const [previewKind, setPreviewKind] = useState<SubjectKind>("regular");
   const a = state.assignment;
   const both = hasSubjects(state, "regular") && hasSubjects(state, "overload");
-  const kind = previewKind === "overload" && !hasSubjects(state, "overload") && hasSubjects(state, "regular") ? "regular" : previewKind;
 
   return (
     <div className="mx-auto max-w-[1280px] space-y-6 p-4 sm:p-6">
@@ -160,7 +158,7 @@ export function AssignmentPanel({ state, busy, onSubject, onAssignment, onDownlo
         <LoadCard state={state} kind="overload" busy={busy} onDownload={onDownload} />
       </div>
 
-      <div className="grid items-start gap-6 lg:grid-cols-1 2xl:grid-cols-[minmax(0,460px)_minmax(0,1fr)]">
+      <div className="space-y-6">
         <div className="space-y-6">
           <Card title="Class details" hint="Days and times come from your schedule grid.">
             {state.subjects.length === 0 ? (
@@ -287,26 +285,38 @@ export function AssignmentPanel({ state, busy, onSubject, onAssignment, onDownlo
           </Card>
         </div>
 
-        <div className="min-w-0 space-y-3 2xl:sticky 2xl:top-[4.5rem]">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h3 className="text-sm font-semibold text-gray-900">Preview</h3>
-            <div className="w-full max-w-[20rem] sm:w-56">
-              <Segmented
-                value={kind}
-                options={[
-                  { id: "regular", label: "Regular load" },
-                  { id: "overload", label: "Overload" },
-                ]}
-                onChange={setPreviewKind}
-              />
-            </div>
-          </div>
-          <div className="rounded-lg bg-gray-100 p-3 sm:p-5">
-            <ScaledSheet>
-              <AssignmentSheet state={state} kind={kind} />
-            </ScaledSheet>
-          </div>
+      </div>
+    </div>
+  );
+}
+
+export function AssignmentPreviewPanel({ state }: { state: DwsState }) {
+  const [previewKind, setPreviewKind] = useState<SubjectKind>("regular");
+  const kind = previewKind === "overload" && !hasSubjects(state, "overload") && hasSubjects(state, "regular") ? "regular" : previewKind;
+
+  return (
+    <div className="mx-auto max-w-[1280px] space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Teaching assignment preview</h2>
+          <p className="mt-0.5 max-w-2xl text-[13px] text-gray-600">Preview the generated regular or overload letter without crowding the editing form.</p>
         </div>
+        <div className="w-full max-w-[20rem] sm:w-56">
+          <Segmented
+            value={kind}
+            options={[
+              { id: "regular", label: "Regular load" },
+              { id: "overload", label: "Overload" },
+            ]}
+            onChange={setPreviewKind}
+          />
+        </div>
+      </div>
+
+      <div className="rounded-lg bg-gray-100 p-3 sm:p-5">
+        <ScaledSheet>
+          <AssignmentSheet state={state} kind={kind} />
+        </ScaledSheet>
       </div>
     </div>
   );

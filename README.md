@@ -17,8 +17,10 @@ There is no account and no server-side storage. Everything stays in your browser
 
 ### Teaching assignment letters
 
-The **Teaching assignment** tab fills in the two memos (form PNC:AA-FO-11) straight from your schedule:
+The **Teaching assignment** and **Teaching assignment preview** tabs fill in the two memos (form PNC:AA-FO-11) straight from your schedule:
 
+- **Teaching assignment** – edit each class’s title, room, type, dates and memo details.
+- **Teaching assignment preview** – review the generated regular and overload memo layout without compressing the editing form.
 - **Regular load** – every subject marked *Regular* (normally 24 hours).
 - **Overload** – every subject marked *Overload*.
 
@@ -56,7 +58,7 @@ deploy with the default settings.
 | `components/schedule-grid.tsx` | The click-and-drag weekly grid |
 | `components/sidebar.tsx` | Details, subjects, activities and sign-off forms |
 | `components/form-sheet.tsx` | On-screen DWS form preview and print layout |
-| `components/assignment-panel.tsx` | Teaching assignment tab (class details, memo details, preview) |
+| `components/assignment-panel.tsx` | Teaching assignment forms and separate preview panel |
 | `components/assignment-sheet.tsx` | On-screen and print layout of the teaching assignment memo |
 | `lib/dws.ts` | Types, hour calculations, example data, saving and loading |
 | `lib/assignment.ts` | Turns the schedule grid into class rows, consultation rows and totals |
