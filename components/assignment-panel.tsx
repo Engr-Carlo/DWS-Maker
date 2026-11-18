@@ -32,14 +32,14 @@ function Segmented<T extends string>({ value, options, onChange }: { value: T; o
   );
 }
 
-function Card({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
+function Card({ title, hint, children, className }: { title: string; hint?: string; children: ReactNode; className?: string }) {
   return (
-    <section className="rounded-lg border border-gray-200 bg-white">
-      <header className="border-b border-gray-200 px-4 py-3">
-        <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+    <section className={cn("overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm", className)}>
+      <header className="border-b border-gray-200 px-3 py-2.5 sm:px-4">
+        <h3 className="text-[15px] font-semibold text-gray-900">{title}</h3>
         {hint && <p className="mt-0.5 text-xs text-gray-500">{hint}</p>}
       </header>
-      <div className="p-4">{children}</div>
+      <div className="p-3 sm:p-4">{children}</div>
     </section>
   );
 }
@@ -130,17 +130,17 @@ export function AssignmentPanel({ state, onAssignment }: PanelProps) {
   const a = state.assignment;
 
   return (
-    <div className="mx-auto max-w-[1280px] space-y-6 p-4 sm:p-6">
-      <div className="space-y-6">
-        <div className="space-y-6">
-          <Card title="Memo details" hint="Appears at the top and bottom of each letter.">
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Date of memo">
-                  <input className={inputClass} type="date" value={a.date} onChange={(e) => onAssignment({ date: e.target.value })} />
-                </Field>
-                <div>
-                  <span className="mb-1 block text-xs font-medium text-gray-600">Status</span>
+    <div className="mx-auto max-w-[1180px] p-4 sm:p-5">
+      <div className="space-y-4">
+        <Card title="Memo details" hint="Appears at the top and bottom of each letter." className="max-w-[1180px]">
+          <div className="space-y-3">
+            <div className="grid gap-3 md:grid-cols-2">
+              <Field label="Date of memo">
+                <input className={cn(inputClass, "min-h-[38px]")} type="date" value={a.date} onChange={(e) => onAssignment({ date: e.target.value })} />
+              </Field>
+              <div>
+                <span className="mb-1 block text-xs font-medium text-gray-600">Status</span>
+                <div className="flex items-center gap-2">
                   <Segmented
                     value={a.final ? "final" : "tentative"}
                     options={[
@@ -151,57 +151,61 @@ export function AssignmentPanel({ state, onAssignment }: PanelProps) {
                   />
                 </div>
               </div>
-              <Field label="To (name as “Last, First M.”)">
-                <input className={inputClass} value={a.toName} placeholder={state.profile.name || "Dela Cruz, Juan D."} onChange={(e) => onAssignment({ toName: e.target.value })} />
+            </div>
+
+            <Field label="To (name as “Last, First M.”)">
+              <input className={cn(inputClass, "min-h-[38px]")} value={a.toName} placeholder={state.profile.name || "Dela Cruz, Juan D."} onChange={(e) => onAssignment({ toName: e.target.value })} />
+            </Field>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              <Field label="From (Dean)">
+                <input className={cn(inputClass, "min-h-[38px]")} value={a.fromName} placeholder="DR. JUAN SANTOS" onChange={(e) => onAssignment({ fromName: e.target.value })} />
               </Field>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="From (Dean)">
-                  <input className={inputClass} value={a.fromName} placeholder="DR. JUAN SANTOS" onChange={(e) => onAssignment({ fromName: e.target.value })} />
-                </Field>
-                <Field label="Dean’s title">
-                  <input className={inputClass} value={a.fromTitle} placeholder="Dean, College of Engineering" onChange={(e) => onAssignment({ fromTitle: e.target.value })} />
-                </Field>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="VP for Academic Affairs">
-                  <input className={inputClass} value={a.vpName} placeholder="Dr. Maria Reyes" onChange={(e) => onAssignment({ vpName: e.target.value })} />
-                </Field>
-                <Field label="VP’s title">
-                  <input className={inputClass} value={a.vpTitle} onChange={(e) => onAssignment({ vpTitle: e.target.value })} />
-                </Field>
-              </div>
-              <div className="grid grid-cols-[1fr_96px] gap-3">
-                <Field label="Conforme (your name)">
-                  <input className={inputClass} value={a.conformeName} placeholder={state.profile.name || "Engr. Juan D. Dela Cruz"} onChange={(e) => onAssignment({ conformeName: e.target.value })} />
-                </Field>
-                <Field label="Status">
-                  <select className={inputClass} value={a.employment} onChange={(e) => onAssignment({ employment: e.target.value })}>
-                    <option value="FT">FT</option>
-                    <option value="PT">PT</option>
-                  </select>
-                </Field>
-              </div>
-              <Field label="Consultation room">
-                <input className={inputClass} value={a.consultRoom} placeholder="e.g. COE Office" onChange={(e) => onAssignment({ consultRoom: e.target.value })} />
+              <Field label="Dean’s title">
+                <input className={cn(inputClass, "min-h-[38px]")} value={a.fromTitle} placeholder="Dean, College of Engineering" onChange={(e) => onAssignment({ fromTitle: e.target.value })} />
               </Field>
             </div>
-          </Card>
 
-          <Card title="Faculty profile" hint="Highest degrees earned. Leave blank if not applicable.">
-            <div className="space-y-3">
-              <Field label="Bachelor">
-                <input className={inputClass} value={a.bachelor} placeholder="e.g. BS IN COMPUTER ENGINEERING" onChange={(e) => onAssignment({ bachelor: e.target.value })} />
+            <div className="grid gap-3 md:grid-cols-2">
+              <Field label="VP for Academic Affairs">
+                <input className={cn(inputClass, "min-h-[38px]")} value={a.vpName} placeholder="Dr. Maria Reyes" onChange={(e) => onAssignment({ vpName: e.target.value })} />
               </Field>
-              <Field label="Masteral">
-                <input className={inputClass} value={a.masteral} onChange={(e) => onAssignment({ masteral: e.target.value })} />
-              </Field>
-              <Field label="Doctorate">
-                <input className={inputClass} value={a.doctorate} onChange={(e) => onAssignment({ doctorate: e.target.value })} />
+              <Field label="VP’s title">
+                <input className={cn(inputClass, "min-h-[38px]")} value={a.vpTitle} onChange={(e) => onAssignment({ vpTitle: e.target.value })} />
               </Field>
             </div>
-          </Card>
-        </div>
 
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_120px]">
+              <Field label="Conforme (your name)">
+                <input className={cn(inputClass, "min-h-[38px]")} value={a.conformeName} placeholder={state.profile.name || "Engr. Juan D. Dela Cruz"} onChange={(e) => onAssignment({ conformeName: e.target.value })} />
+              </Field>
+              <Field label="Status">
+                <select className={cn(inputClass, "min-h-[38px]")} value={a.employment} onChange={(e) => onAssignment({ employment: e.target.value })}>
+                  <option value="FT">FT</option>
+                  <option value="PT">PT</option>
+                </select>
+              </Field>
+            </div>
+
+            <Field label="Consultation room">
+              <input className={cn(inputClass, "min-h-[38px]")} value={a.consultRoom} placeholder="e.g. COE Office" onChange={(e) => onAssignment({ consultRoom: e.target.value })} />
+            </Field>
+          </div>
+        </Card>
+
+        <Card title="Faculty profile" hint="Highest degrees earned. Leave blank if not applicable." className="max-w-[1180px]">
+          <div className="space-y-3">
+            <Field label="Bachelor">
+              <input className={cn(inputClass, "min-h-[38px]")} value={a.bachelor} placeholder="e.g. BS IN COMPUTER ENGINEERING" onChange={(e) => onAssignment({ bachelor: e.target.value })} />
+            </Field>
+            <Field label="Masteral">
+              <input className={cn(inputClass, "min-h-[38px]")} value={a.masteral} onChange={(e) => onAssignment({ masteral: e.target.value })} />
+            </Field>
+            <Field label="Doctorate">
+              <input className={cn(inputClass, "min-h-[38px]")} value={a.doctorate} onChange={(e) => onAssignment({ doctorate: e.target.value })} />
+            </Field>
+          </div>
+        </Card>
       </div>
     </div>
   );
