@@ -404,7 +404,7 @@ function Workspace() {
             {view === "preview" ? (
               <PreviewPane state={state} />
             ) : view === "assignment" ? (
-              <AssignmentPanel state={state} onSubject={updateSubject} onAssignment={updateAssignment} />
+              <AssignmentPanel state={state} onAssignment={updateAssignment} />
             ) : view === "assignment-preview" ? (
               <AssignmentPreviewPanel state={state} busy={exporting} onDownload={downloadAssignments} />
             ) : (

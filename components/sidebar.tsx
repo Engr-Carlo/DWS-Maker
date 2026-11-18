@@ -68,11 +68,33 @@ function KindToggle({ value, onChange }: { value: Subject["kind"]; onChange: (ki
   );
 }
 
+function ComponentToggle({ value, onChange }: { value: Subject["component"]; onChange: (component: Subject["component"]) => void }) {
+  return (
+    <div className="grid grid-cols-2 rounded-md border border-gray-300 bg-white p-0.5 text-[13px]">
+      {(["lec", "lab"] as const).map((component) => (
+        <button
+          key={component}
+          type="button"
+          aria-pressed={value === component}
+          onClick={() => onChange(component)}
+          className={cn(
+            "h-8 rounded font-medium capitalize transition-colors",
+            value === component ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100",
+          )}
+        >
+          {component}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function SubjectRow({
   subject,
   placed,
   selected,
   editing,
+  effectivityDate,
   onSelect,
   onToggleEdit,
   onUpdate,
@@ -82,6 +104,7 @@ function SubjectRow({
   placed: number;
   selected: boolean;
   editing: boolean;
+  effectivityDate: string;
   onSelect: () => void;
   onToggleEdit: () => void;
   onUpdate: (patch: Partial<Subject>) => void;
@@ -152,6 +175,7 @@ function SubjectRow({
               />
             </Field>
           </div>
+
           <div className="grid grid-cols-2 gap-3">
             <Field label="Hours per week">
               <input
@@ -168,6 +192,41 @@ function SubjectRow({
               <KindToggle value={subject.kind} onChange={(kind) => onUpdate({ kind })} />
             </div>
           </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Descriptive title">
+              <input
+                className={inputClass}
+                value={subject.title}
+                placeholder="e.g. Emerging Technologies"
+                onChange={(e) => onUpdate({ title: e.target.value })}
+              />
+            </Field>
+            <div>
+              <span className="mb-1 block text-xs font-medium text-gray-600">Type</span>
+              <ComponentToggle value={subject.component} onChange={(component) => onUpdate({ component })} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Room">
+              <input
+                className={inputClass}
+                value={subject.room}
+                placeholder="e.g. 302"
+                onChange={(e) => onUpdate({ room: e.target.value })}
+              />
+            </Field>
+            <Field label="Effectivity date">
+              <input
+                className={inputClass}
+                type="date"
+                value={subject.startDate || effectivityDate}
+                onChange={(e) => onUpdate({ startDate: e.target.value })}
+              />
+            </Field>
+          </div>
+
           <div className="flex items-center justify-between pt-1">
             <button type="button" onClick={onRemove} className="inline-flex items-center gap-1.5 text-[13px] font-medium text-red-600 hover:text-red-700">
               <Trash2 className="h-3.5 w-3.5" /> Delete subject
@@ -240,6 +299,7 @@ export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubj
                 placed={placed[subject.id] ?? 0}
                 selected={brush === subjectBrush(subject.id)}
                 editing={editingId === subject.id}
+                effectivityDate={profile.effectivityDate}
                 onSelect={() => onBrush(subjectBrush(subject.id))}
                 onToggleEdit={() => setEditingId(editingId === subject.id ? null : subject.id)}
                 onUpdate={(patch) => onUpdateSubject(subject.id, patch)}

@@ -5,13 +5,12 @@ import { AlertTriangle, CheckCircle2, Download } from "lucide-react";
 import { Button, Field, inputClass } from "./ui";
 import { AssignmentSheet, SHEET_WIDTH } from "./assignment-sheet";
 import { buildAssignment, formatNumber } from "@/lib/assignment";
-import { cn, type Assignment, type DwsState, type Subject, type SubjectKind } from "@/lib/dws";
+import { cn, type Assignment, type DwsState, type SubjectKind } from "@/lib/dws";
 
 const REGULAR_TARGET_HOURS = 24;
 
 interface PanelProps {
   state: DwsState;
-  onSubject: (id: string, patch: Partial<Subject>) => void;
   onAssignment: (patch: Partial<Assignment>) => void;
 }
 
@@ -127,74 +126,13 @@ function LoadCard({ state, kind, busy, onDownload }: { state: DwsState; kind: Su
   );
 }
 
-export function AssignmentPanel({ state, onSubject, onAssignment }: PanelProps) {
+export function AssignmentPanel({ state, onAssignment }: PanelProps) {
   const a = state.assignment;
 
   return (
     <div className="mx-auto max-w-[1280px] space-y-6 p-4 sm:p-6">
       <div className="space-y-6">
         <div className="space-y-6">
-          <Card title="Class details" hint="Days and times come from your schedule grid.">
-            {state.subjects.length === 0 ? (
-              <p className="rounded-md border border-dashed border-gray-300 px-3 py-4 text-center text-[13px] text-gray-500">
-                Add your subjects in step 2 on the left first.
-              </p>
-            ) : (
-              <ul className="space-y-3">
-                {state.subjects.map((s) => (
-                  <li key={s.id} className="rounded-xl border border-gray-200 bg-gray-50/80 p-3">
-                    <div className="flex flex-col gap-3 xl:flex-row xl:items-start">
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                          <div className="min-w-0">
-                            <div className="truncate text-sm font-semibold text-gray-900">
-                              {s.code || "New subject"}
-                              {s.section && <span className="font-normal text-gray-500"> · {s.section}</span>}
-                            </div>
-                          </div>
-                          <div className="w-full max-w-[220px] shrink-0 xl:w-52">
-                            <Segmented
-                              value={s.kind}
-                              options={[
-                                { id: "regular", label: "Regular" },
-                                { id: "overload", label: "Overload" },
-                              ]}
-                              onChange={(kindValue) => onSubject(s.id, { kind: kindValue })}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                          <Field label="Descriptive title">
-                            <input className={inputClass} value={s.title} placeholder="e.g. Emerging Technologies" onChange={(e) => onSubject(s.id, { title: e.target.value })} />
-                          </Field>
-                          <div>
-                            <span className="mb-1 block text-xs font-medium text-gray-600">Type</span>
-                            <Segmented
-                              value={s.component}
-                              options={[
-                                { id: "lec", label: "Lec" },
-                                { id: "lab", label: "Lab" },
-                              ]}
-                              onChange={(component) => onSubject(s.id, { component })}
-                            />
-                          </div>
-                          <Field label="Room">
-                            <input className={inputClass} value={s.room} placeholder="e.g. 302" onChange={(e) => onSubject(s.id, { room: e.target.value })} />
-                          </Field>
-                          <Field label="Effectivity date">
-                            <input className={inputClass} type="date" value={s.startDate || state.profile.effectivityDate} onChange={(e) => onSubject(s.id, { startDate: e.target.value })} />
-                          </Field>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <p className="mt-3 text-xs text-gray-500">Lecture units equal hours; a lab unit equals 3 hours. Classes that meet at the same time on several days share one row.</p>
-          </Card>
-
           <Card title="Memo details" hint="Appears at the top and bottom of each letter.">
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
@@ -275,7 +213,7 @@ export function AssignmentPreviewPanel({ state, busy, onDownload }: { state: Dws
       <div>
         <h2 className="text-4xl font-bold tracking-tight text-gray-900">Teachload preview</h2>
         <p className="mt-1 max-w-3xl text-base text-gray-600">
-          Review the regular and overload teaching assignment letters. Update the class details on the left, then use the download actions at the bottom of each preview card.
+          Review the regular and overload teaching assignment letters. Update each subject in the subject editor on the left, then use the download actions at the bottom of each preview card.
         </p>
       </div>
 
