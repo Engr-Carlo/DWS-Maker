@@ -160,7 +160,7 @@ export function AssignmentPanel({ state, busy, onSubject, onAssignment, onDownlo
         <LoadCard state={state} kind="overload" busy={busy} onDownload={onDownload} />
       </div>
 
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,460px)_minmax(0,1fr)]">
+      <div className="grid items-start gap-6 lg:grid-cols-1 2xl:grid-cols-[minmax(0,460px)_minmax(0,1fr)]">
         <div className="space-y-6">
           <Card title="Class details" hint="Days and times come from your schedule grid.">
             {state.subjects.length === 0 ? (
@@ -287,10 +287,10 @@ export function AssignmentPanel({ state, busy, onSubject, onAssignment, onDownlo
           </Card>
         </div>
 
-        <div className="min-w-0 space-y-3 xl:sticky xl:top-[4.5rem]">
-          <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0 space-y-3 2xl:sticky 2xl:top-[4.5rem]">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-sm font-semibold text-gray-900">Preview</h3>
-            <div className="w-56">
+            <div className="w-full max-w-[20rem] sm:w-56">
               <Segmented
                 value={kind}
                 options={[
