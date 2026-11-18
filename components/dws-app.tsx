@@ -346,7 +346,7 @@ function Workspace() {
                 ["schedule", "Schedule"],
                 ["preview", "Form preview"],
                 ["assignment", "Teaching assignment"],
-                ["assignment-preview", "TL preview"],
+                ["assignment-preview", "Teachload preview"],
               ] as const
             ).map(([id, label]) => (
               <button

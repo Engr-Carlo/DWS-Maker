@@ -3,7 +3,7 @@
 import { useMemo, type ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Download } from "lucide-react";
 import { Button, Field, inputClass } from "./ui";
-import { buildAssignment, formatNumber, hasSubjects } from "@/lib/assignment";
+import { buildAssignment, formatNumber } from "@/lib/assignment";
 import { cn, type Assignment, type DwsState, type Subject, type SubjectKind } from "@/lib/dws";
 
 const REGULAR_TARGET_HOURS = 24;
@@ -249,23 +249,13 @@ export function AssignmentPanel({ state, onSubject, onAssignment }: PanelProps) 
 }
 
 export function AssignmentPreviewPanel({ state, busy, onDownload }: { state: DwsState; busy: boolean; onDownload: (kinds: SubjectKind[]) => void }) {
-  const both = hasSubjects(state, "regular") && hasSubjects(state, "overload");
-
   return (
     <div className="mx-auto max-w-[1280px] space-y-6 p-4 sm:p-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-4xl font-bold tracking-tight text-gray-900">Teaching assignment letters</h2>
-          <p className="mt-1 max-w-3xl text-base text-gray-600">
-            Your schedule already holds the days, times and hours. Add each class&rsquo;s title, room and type below and both letters
-            (form PNC:AA-FO-11) are filled in for you: regular load first, then the overload.
-          </p>
-        </div>
-        {both && (
-          <Button variant="secondary" disabled={busy} onClick={() => onDownload(["regular", "overload"])}>
-            <Download className="h-4 w-4" /> Download both
-          </Button>
-        )}
+      <div>
+        <h2 className="text-4xl font-bold tracking-tight text-gray-900">Teachload preview</h2>
+        <p className="mt-1 max-w-3xl text-base text-gray-600">
+          Review the regular and overload teaching assignment letters. Update the class details on the left, then use the download actions at the bottom of each preview card.
+        </p>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-2">
