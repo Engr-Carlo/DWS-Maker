@@ -3,6 +3,7 @@
 import { useMemo, type ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Download } from "lucide-react";
 import { Button, Field, inputClass } from "./ui";
+import { AssignmentSheet, SHEET_WIDTH } from "./assignment-sheet";
 import { buildAssignment, formatNumber } from "@/lib/assignment";
 import { cn, type Assignment, type DwsState, type Subject, type SubjectKind } from "@/lib/dws";
 
@@ -49,6 +50,7 @@ function LoadCard({ state, kind, busy, onDownload }: { state: DwsState; kind: Su
   const total = state.subjects.filter((s) => s.kind === kind).length;
   const regular = kind === "regular";
   const off = regular && model.rows.length > 0 && model.totalHours !== REGULAR_TARGET_HOURS;
+  const previewScale = 0.35;
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -98,9 +100,28 @@ function LoadCard({ state, kind, busy, onDownload }: { state: DwsState; kind: Su
           )}
         </div>
 
-        <Button className="mt-auto w-full" variant="primary" disabled={busy || model.rows.length === 0} onClick={() => onDownload([kind])}>
-          <Download className="h-4 w-4" /> Download {regular ? "regular load" : "overload"} (.docx)
-        </Button>
+        <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-stone-50">
+          <div className="flex max-h-[470px] justify-center overflow-auto bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.9),_rgba(244,244,245,0.96))] p-3">
+            <div
+              style={{
+                width: SHEET_WIDTH,
+                height: 1248,
+                transform: `scale(${previewScale})`,
+                transformOrigin: "top center",
+              }}
+              className="origin-top"
+            >
+              <AssignmentSheet state={state} kind={kind} model={model} />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between gap-3 border-t border-gray-200 pt-3">
+          <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-gray-500">Generated docx</span>
+          <Button size="sm" variant="secondary" disabled={busy || model.rows.length === 0} onClick={() => onDownload([kind])}>
+            <Download className="h-3.5 w-3.5" /> Download
+          </Button>
+        </div>
       </div>
     </div>
   );
