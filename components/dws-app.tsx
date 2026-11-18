@@ -346,7 +346,7 @@ function Workspace() {
                 ["schedule", "Schedule"],
                 ["preview", "Form preview"],
                 ["assignment", "Teaching assignment"],
-                ["assignment-preview", "Teaching assignment preview"],
+                ["assignment-preview", "TL preview"],
               ] as const
             ).map(([id, label]) => (
               <button
@@ -404,9 +404,9 @@ function Workspace() {
             {view === "preview" ? (
               <PreviewPane state={state} />
             ) : view === "assignment" ? (
-              <AssignmentPanel state={state} busy={exporting} onSubject={updateSubject} onAssignment={updateAssignment} onDownload={downloadAssignments} />
+              <AssignmentPanel state={state} onSubject={updateSubject} onAssignment={updateAssignment} />
             ) : view === "assignment-preview" ? (
-              <AssignmentPreviewPanel state={state} />
+              <AssignmentPreviewPanel state={state} busy={exporting} onDownload={downloadAssignments} />
             ) : (
               <div className="mx-auto max-w-[1100px] space-y-4 p-4 sm:p-6">
                 {showGuide && (

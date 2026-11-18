@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Download } from "lucide-react";
-import { SHEET_WIDTH, AssignmentSheet } from "./assignment-sheet";
 import { Button, Field, inputClass } from "./ui";
 import { buildAssignment, formatNumber, hasSubjects } from "@/lib/assignment";
 import { cn, type Assignment, type DwsState, type Subject, type SubjectKind } from "@/lib/dws";
@@ -11,10 +10,8 @@ const REGULAR_TARGET_HOURS = 24;
 
 interface PanelProps {
   state: DwsState;
-  busy: boolean;
   onSubject: (id: string, patch: Partial<Subject>) => void;
   onAssignment: (patch: Partial<Assignment>) => void;
-  onDownload: (kinds: SubjectKind[]) => void;
 }
 
 function Segmented<T extends string>({ value, options, onChange }: { value: T; options: { id: T; label: string }[]; onChange: (id: T) => void }) {
@@ -47,33 +44,6 @@ function Card({ title, hint, children }: { title: string; hint?: string; childre
   );
 }
 
-function ScaledSheet({ children }: { children: ReactNode }) {
-  const outer = useRef<HTMLDivElement>(null);
-  const inner = useRef<HTMLDivElement>(null);
-  const [fit, setFit] = useState({ scale: 1, height: 1248 });
-
-  useEffect(() => {
-    const o = outer.current;
-    const i = inner.current;
-    if (!o || !i) return;
-    const measure = () => setFit({ scale: Math.min(1, o.clientWidth / SHEET_WIDTH), height: i.offsetHeight });
-    const observer = new ResizeObserver(measure);
-    observer.observe(o);
-    observer.observe(i);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div ref={outer} className="w-full">
-      <div className="mx-auto shadow-md ring-1 ring-gray-300" style={{ width: SHEET_WIDTH * fit.scale, height: fit.height * fit.scale }}>
-        <div ref={inner} style={{ width: SHEET_WIDTH, transform: `scale(${fit.scale})`, transformOrigin: "top left" }}>
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function LoadCard({ state, kind, busy, onDownload }: { state: DwsState; kind: SubjectKind; busy: boolean; onDownload: (kinds: SubjectKind[]) => void }) {
   const model = useMemo(() => buildAssignment(state, kind), [state, kind]);
   const total = state.subjects.filter((s) => s.kind === kind).length;
@@ -81,83 +51,66 @@ function LoadCard({ state, kind, busy, onDownload }: { state: DwsState; kind: Su
   const off = regular && model.rows.length > 0 && model.totalHours !== REGULAR_TARGET_HOURS;
 
   return (
-    <div className="flex flex-col rounded-lg border border-gray-200 bg-white p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900">{regular ? "Regular load" : "Overload"}</h3>
-          <p className="text-xs text-gray-500">{regular ? "First letter – your 24-hour teaching load" : "Second letter – everything beyond the regular load"}</p>
-        </div>
-        <span className="h-8 w-1 rounded-full" style={{ background: regular ? "#538135" : "#DC2626" }} />
-      </div>
-
-      <dl className="mt-4 grid grid-cols-3 gap-2">
-        {[
-          ["Hours", formatNumber(model.totalHours)],
-          ["Units", formatNumber(model.totalUnits)],
-          ["Classes", String(model.rows.length)],
-        ].map(([label, value]) => (
-          <div key={label} className="rounded-md bg-gray-50 px-3 py-2">
-            <dt className="text-[11px] text-gray-500">{label}</dt>
-            <dd className="text-lg font-semibold tabular-nums text-gray-900">{value}</dd>
+    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <span className="h-7 w-1 rounded-full" style={{ background: regular ? "#3B8F45" : "#DC2626" }} />
+          <div>
+            <h3 className="text-2xl font-bold tracking-tight text-gray-900">{regular ? "Regular load" : "Overload"}</h3>
+            <p className="text-sm text-gray-500">{regular ? "First letter — your 24-hour teaching load" : "Second letter — everything beyond the regular load"}</p>
           </div>
-        ))}
-      </dl>
-
-      <div className="mt-3 min-h-[2.5rem] space-y-1 text-xs">
-        {total === 0 && <p className="text-gray-500">No {regular ? "regular" : "overload"} subjects yet. Add them in step 2 on the left and set the load type.</p>}
-        {model.unplaced.length > 0 && (
-          <p className="flex items-start gap-1.5 text-amber-700">
-            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            {model.unplaced.length === 1 ? "1 subject is" : `${model.unplaced.length} subjects are`} not on the schedule grid yet, so
-            {model.unplaced.length === 1 ? " it is" : " they are"} left out.
-          </p>
-        )}
-        {off && (
-          <p className="flex items-start gap-1.5 text-amber-700">
-            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            A regular load is {REGULAR_TARGET_HOURS} hours; this one is {formatNumber(model.totalHours)}. Move a subject to Overload if needed.
-          </p>
-        )}
-        {regular && model.rows.length > 0 && !off && model.unplaced.length === 0 && (
-          <p className="flex items-center gap-1.5 text-green-700">
-            <CheckCircle2 className="h-3.5 w-3.5" /> Matches the {REGULAR_TARGET_HOURS}-hour regular load.
-          </p>
-        )}
+        </div>
       </div>
 
-      <Button className="mt-3 w-full" variant="primary" disabled={busy || model.rows.length === 0} onClick={() => onDownload([kind])}>
-        <Download className="h-4 w-4" /> Download {regular ? "regular load" : "overload"} (.docx)
-      </Button>
+      <div className="flex flex-1 flex-col p-4">
+        <dl className="grid grid-cols-3 gap-2">
+          {[
+            ["Hours", formatNumber(model.totalHours)],
+            ["Units", formatNumber(model.totalUnits)],
+            ["Classes", String(model.rows.length)],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-md bg-gray-50 px-3 py-3">
+              <dt className="text-[11px] font-medium uppercase tracking-wide text-gray-500">{label}</dt>
+              <dd className="mt-1 text-3xl font-semibold tabular-nums text-gray-900">{value}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <div className="mt-4 min-h-[3rem] space-y-1 text-sm">
+          {total === 0 && <p className="text-gray-500">No {regular ? "regular" : "overload"} subjects yet. Add them in step 2 on the left and set the load type.</p>}
+          {model.unplaced.length > 0 && (
+            <p className="flex items-start gap-1.5 text-amber-700">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              {model.unplaced.length === 1 ? "1 subject is" : `${model.unplaced.length} subjects are`} not on the schedule grid yet, so
+              {model.unplaced.length === 1 ? " it is" : " they are"} left out.
+            </p>
+          )}
+          {off && (
+            <p className="flex items-start gap-1.5 text-amber-700">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              A regular load is {REGULAR_TARGET_HOURS} hours; this one is {formatNumber(model.totalHours)}. Move a subject to Overload if needed.
+            </p>
+          )}
+          {regular && model.rows.length > 0 && !off && model.unplaced.length === 0 && (
+            <p className="flex items-center gap-1.5 text-green-700">
+              <CheckCircle2 className="h-4 w-4" /> Matches the {REGULAR_TARGET_HOURS}-hour regular load.
+            </p>
+          )}
+        </div>
+
+        <Button className="mt-auto w-full" variant="primary" disabled={busy || model.rows.length === 0} onClick={() => onDownload([kind])}>
+          <Download className="h-4 w-4" /> Download {regular ? "regular load" : "overload"} (.docx)
+        </Button>
+      </div>
     </div>
   );
 }
 
-export function AssignmentPanel({ state, busy, onSubject, onAssignment, onDownload }: PanelProps) {
+export function AssignmentPanel({ state, onSubject, onAssignment }: PanelProps) {
   const a = state.assignment;
-  const both = hasSubjects(state, "regular") && hasSubjects(state, "overload");
 
   return (
     <div className="mx-auto max-w-[1280px] space-y-6 p-4 sm:p-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">Teaching assignment letters</h2>
-          <p className="mt-0.5 max-w-2xl text-[13px] text-gray-600">
-            Your schedule already holds the days, times and hours. Add each class&rsquo;s title, room and type below and both letters
-            (form PNC:AA-FO-11) are filled in for you: regular load first, then the overload.
-          </p>
-        </div>
-        {both && (
-          <Button variant="secondary" disabled={busy} onClick={() => onDownload(["regular", "overload"])}>
-            <Download className="h-4 w-4" /> Download both
-          </Button>
-        )}
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <LoadCard state={state} kind="regular" busy={busy} onDownload={onDownload} />
-        <LoadCard state={state} kind="overload" busy={busy} onDownload={onDownload} />
-      </div>
-
       <div className="space-y-6">
         <div className="space-y-6">
           <Card title="Class details" hint="Days and times come from your schedule grid.">
@@ -168,46 +121,51 @@ export function AssignmentPanel({ state, busy, onSubject, onAssignment, onDownlo
             ) : (
               <ul className="space-y-3">
                 {state.subjects.map((s) => (
-                  <li key={s.id} className="rounded-lg border border-gray-200 p-3">
-                    <div className="mb-2.5 flex items-center justify-between gap-2">
-                      <span className="truncate text-sm font-semibold text-gray-900">
-                        {s.code || "New subject"}
-                        {s.section && <span className="font-normal text-gray-500"> · {s.section}</span>}
-                      </span>
-                      <div className="w-40 shrink-0">
-                        <Segmented
-                          value={s.kind}
-                          options={[
-                            { id: "regular", label: "Regular" },
-                            { id: "overload", label: "Overload" },
-                          ]}
-                          onChange={(kindValue) => onSubject(s.id, { kind: kindValue })}
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2.5">
-                      <Field label="Descriptive title">
-                        <input className={inputClass} value={s.title} placeholder="e.g. Emerging Technologies" onChange={(e) => onSubject(s.id, { title: e.target.value })} />
-                      </Field>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <span className="mb-1 block text-xs font-medium text-gray-600">Type</span>
-                          <Segmented
-                            value={s.component}
-                            options={[
-                              { id: "lec", label: "Lec" },
-                              { id: "lab", label: "Lab" },
-                            ]}
-                            onChange={(component) => onSubject(s.id, { component })}
-                          />
+                  <li key={s.id} className="rounded-xl border border-gray-200 bg-gray-50/80 p-3">
+                    <div className="flex flex-col gap-3 xl:flex-row xl:items-start">
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-semibold text-gray-900">
+                              {s.code || "New subject"}
+                              {s.section && <span className="font-normal text-gray-500"> · {s.section}</span>}
+                            </div>
+                          </div>
+                          <div className="w-full max-w-[220px] shrink-0 xl:w-52">
+                            <Segmented
+                              value={s.kind}
+                              options={[
+                                { id: "regular", label: "Regular" },
+                                { id: "overload", label: "Overload" },
+                              ]}
+                              onChange={(kindValue) => onSubject(s.id, { kind: kindValue })}
+                            />
+                          </div>
                         </div>
-                        <Field label="Room">
-                          <input className={inputClass} value={s.room} placeholder="e.g. 302" onChange={(e) => onSubject(s.id, { room: e.target.value })} />
-                        </Field>
+
+                        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                          <Field label="Descriptive title">
+                            <input className={inputClass} value={s.title} placeholder="e.g. Emerging Technologies" onChange={(e) => onSubject(s.id, { title: e.target.value })} />
+                          </Field>
+                          <div>
+                            <span className="mb-1 block text-xs font-medium text-gray-600">Type</span>
+                            <Segmented
+                              value={s.component}
+                              options={[
+                                { id: "lec", label: "Lec" },
+                                { id: "lab", label: "Lab" },
+                              ]}
+                              onChange={(component) => onSubject(s.id, { component })}
+                            />
+                          </div>
+                          <Field label="Room">
+                            <input className={inputClass} value={s.room} placeholder="e.g. 302" onChange={(e) => onSubject(s.id, { room: e.target.value })} />
+                          </Field>
+                          <Field label="Effectivity date">
+                            <input className={inputClass} type="date" value={s.startDate || state.profile.effectivityDate} onChange={(e) => onSubject(s.id, { startDate: e.target.value })} />
+                          </Field>
+                        </div>
                       </div>
-                      <Field label="Effectivity date">
-                        <input className={inputClass} type="date" value={s.startDate || state.profile.effectivityDate} onChange={(e) => onSubject(s.id, { startDate: e.target.value })} />
-                      </Field>
                     </div>
                   </li>
                 ))}
@@ -290,33 +248,29 @@ export function AssignmentPanel({ state, busy, onSubject, onAssignment, onDownlo
   );
 }
 
-export function AssignmentPreviewPanel({ state }: { state: DwsState }) {
-  const [previewKind, setPreviewKind] = useState<SubjectKind>("regular");
-  const kind = previewKind === "overload" && !hasSubjects(state, "overload") && hasSubjects(state, "regular") ? "regular" : previewKind;
+export function AssignmentPreviewPanel({ state, busy, onDownload }: { state: DwsState; busy: boolean; onDownload: (kinds: SubjectKind[]) => void }) {
+  const both = hasSubjects(state, "regular") && hasSubjects(state, "overload");
 
   return (
     <div className="mx-auto max-w-[1280px] space-y-6 p-4 sm:p-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Teaching assignment preview</h2>
-          <p className="mt-0.5 max-w-2xl text-[13px] text-gray-600">Preview the generated regular or overload letter without crowding the editing form.</p>
+          <h2 className="text-4xl font-bold tracking-tight text-gray-900">Teaching assignment letters</h2>
+          <p className="mt-1 max-w-3xl text-base text-gray-600">
+            Your schedule already holds the days, times and hours. Add each class&rsquo;s title, room and type below and both letters
+            (form PNC:AA-FO-11) are filled in for you: regular load first, then the overload.
+          </p>
         </div>
-        <div className="w-full max-w-[20rem] sm:w-56">
-          <Segmented
-            value={kind}
-            options={[
-              { id: "regular", label: "Regular load" },
-              { id: "overload", label: "Overload" },
-            ]}
-            onChange={setPreviewKind}
-          />
-        </div>
+        {both && (
+          <Button variant="secondary" disabled={busy} onClick={() => onDownload(["regular", "overload"])}>
+            <Download className="h-4 w-4" /> Download both
+          </Button>
+        )}
       </div>
 
-      <div className="rounded-lg bg-gray-100 p-3 sm:p-5">
-        <ScaledSheet>
-          <AssignmentSheet state={state} kind={kind} />
-        </ScaledSheet>
+      <div className="grid gap-5 xl:grid-cols-2">
+        <LoadCard state={state} kind="regular" busy={busy} onDownload={onDownload} />
+        <LoadCard state={state} kind="overload" busy={busy} onDownload={onDownload} />
       </div>
     </div>
   );
