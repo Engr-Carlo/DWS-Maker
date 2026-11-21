@@ -14,6 +14,7 @@ import {
   MoreHorizontal,
   Printer,
   Redo2,
+  ShieldCheck,
   Trash2,
   Undo2,
 } from "lucide-react";
@@ -69,9 +70,9 @@ const SHORT_NAMES: Record<CategoryId, string> = {
 
 const subscribe = () => () => {};
 
-export default function DwsApp({ userEmail }: { userEmail: string }) {
+export default function DwsApp({ userEmail, approved, isAdmin }: { userEmail: string; approved: boolean; isAdmin: boolean }) {
   const hydrated = useSyncExternalStore(subscribe, () => true, () => false);
-  return hydrated ? <Workspace userEmail={userEmail} /> : <div className="min-h-screen bg-white" />;
+  return hydrated ? <Workspace userEmail={userEmail} approved={approved} isAdmin={isAdmin} /> : <div className="min-h-screen bg-white" />;
 }
 
 function defaultBrush(state: DwsState): string {
@@ -140,7 +141,7 @@ function FileMenu({ items }: { items: MenuItem[] }) {
   );
 }
 
-function Workspace({ userEmail }: { userEmail: string }) {
+function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approved: boolean; isAdmin: boolean }) {
   const router = useRouter();
   const [state, setState] = useState<DwsState>(loadState);
   const [brush, setBrush] = useState(() => defaultBrush(state));
@@ -343,6 +344,7 @@ function Workspace({ userEmail }: { userEmail: string }) {
   };
 
   const download = async () => {
+    if (!approved) return;
     setExporting(true);
     try {
       await exportDocx(state);
@@ -354,6 +356,7 @@ function Workspace({ userEmail }: { userEmail: string }) {
   };
 
   const downloadAssignments = async (kinds: SubjectKind[]) => {
+    if (!approved) return;
     setExporting(true);
     try {
       await exportAssignments(state, kinds);
@@ -421,19 +424,20 @@ function Workspace({ userEmail }: { userEmail: string }) {
             <FileMenu
               items={[
                 { label: "Load example", icon: <LayoutTemplate className="h-4 w-4" />, onClick: loadExample },
-                { label: "Save backup file", icon: <FileDown className="h-4 w-4" />, onClick: saveBackup, divider: true },
+                ...(approved ? [{ label: "Save backup file", icon: <FileDown className="h-4 w-4" />, onClick: saveBackup, divider: true }] : []),
                 { label: "Open backup file…", icon: <FolderOpen className="h-4 w-4" />, onClick: () => fileInput.current?.click() },
                 { label: "Clear schedule grid", icon: <Eraser className="h-4 w-4" />, onClick: clearSchedule, divider: true },
                 { label: "Start over", icon: <Trash2 className="h-4 w-4" />, onClick: startOver, danger: true },
                 { label: "Sign out", icon: <LogOut className="h-4 w-4" />, onClick: signOut, divider: true },
+                ...(isAdmin ? [{ label: "Admin dashboard", icon: <ShieldCheck className="h-4 w-4" />, onClick: () => router.push("/admin") }] : []),
               ]}
             />
             <span className="hidden max-w-32 truncate text-xs text-gray-500 xl:block" title={userEmail}>{userEmail}</span>
-            <Button variant="secondary" onClick={() => window.print()}>
+            <Button variant="secondary" onClick={() => window.print()} disabled={!approved} title={approved ? undefined : "Download access is awaiting admin approval"}>
               <Printer className="h-4 w-4" />
               <span className="hidden sm:inline">Print</span>
             </Button>
-            <Button variant="primary" onClick={download} disabled={exporting}>
+            <Button variant="primary" onClick={download} disabled={exporting || !approved} title={approved ? undefined : "Download access is awaiting admin approval"}>
               <Download className="h-4 w-4" />
               <span className="hidden sm:inline">{exporting ? "Preparing…" : "Download DWS"}</span>
             </Button>
@@ -445,6 +449,12 @@ function Workspace({ userEmail }: { userEmail: string }) {
             )}
           </div>
         </header>
+
+        {!approved && (
+          <div className="border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-center text-sm text-amber-800">
+            Your account is verified. You can edit and preview everything, but an administrator must approve your account before printing or downloading.
+          </div>
+        )}
 
         <div className="flex flex-col lg:flex-row">
           <aside className="w-full shrink-0 border-b border-gray-200 bg-white lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:w-[340px] lg:overflow-y-auto lg:border-b-0 lg:border-r">
@@ -466,7 +476,7 @@ function Workspace({ userEmail }: { userEmail: string }) {
             ) : view === "assignment" ? (
               <AssignmentPanel state={state} onAssignment={updateAssignment} />
             ) : view === "assignment-preview" ? (
-              <AssignmentPreviewPanel state={state} busy={exporting} onDownload={downloadAssignments} />
+              <AssignmentPreviewPanel state={state} busy={exporting} canDownload={approved} onDownload={downloadAssignments} />
             ) : (
               <div className="mx-auto max-w-[1100px] space-y-4 p-4 sm:p-6">
                 {showGuide && (
@@ -552,7 +562,7 @@ function Workspace({ userEmail }: { userEmail: string }) {
         </div>
       </div>
 
-      <div className="hidden print:block">
+      <div className={cn("hidden print:block", !approved && "print:hidden")}>
         {view === "assignment" || view === "assignment-preview" ? (
           (["regular", "overload"] as const)
             .filter((kind) => hasSubjects(state, kind))

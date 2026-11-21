@@ -7,5 +7,5 @@ export const instant = false;
 export default async function WorkspacePage() {
   const user = await getAuthenticatedUser();
   if (!user) redirect("/login");
-  return <DwsApp userEmail={user.email} />;
+  return <DwsApp userEmail={user.email} approved={Boolean(user.approvedAt || user.isAdmin)} isAdmin={user.isAdmin} />;
 }

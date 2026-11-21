@@ -10,6 +10,13 @@ export interface AuthUser {
   id: string;
   email: string;
   emailVerifiedAt: Date | null;
+  approvedAt: Date | null;
+  isAdmin: boolean;
+}
+
+export function isAdminEmail(email: string) {
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  return Boolean(adminEmail && normalizeEmail(email) === adminEmail);
 }
 
 export function normalizeEmail(email: string) {
@@ -150,18 +157,20 @@ export async function getAuthenticatedUser(): Promise<AuthUser | null> {
   await ensureSchema();
   const sql = db();
   const rows = await sql`
-    SELECT u.id, u.email, u.email_verified_at
+    SELECT u.id, u.email, u.email_verified_at, u.approved_at
     FROM sessions s
     JOIN users u ON u.id = s.user_id
     WHERE s.token_hash = ${digestSessionToken(token)}
       AND s.expires_at > NOW()
       AND u.email_verified_at IS NOT NULL
   `;
-  const row = rows[0] as { id?: string; email?: string; email_verified_at?: string | null } | undefined;
+  const row = rows[0] as { id?: string; email?: string; email_verified_at?: string | null; approved_at?: string | null } | undefined;
   if (!row?.id || !row.email) return null;
   return {
     id: row.id,
     email: row.email,
     emailVerifiedAt: row.email_verified_at ? new Date(row.email_verified_at) : null,
+    approvedAt: row.approved_at ? new Date(row.approved_at) : null,
+    isAdmin: isAdminEmail(row.email),
   };
 }

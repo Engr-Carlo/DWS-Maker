@@ -56,6 +56,17 @@ For local development or Vercel, copy `.env.example` to `.env.local` and set:
 - `DATABASE_URL` – the pooled Neon PostgreSQL connection string.
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` – SMTP credentials.
 - `EMAIL_VERIFICATION_SECRET` – a long random secret used to HMAC verification tokens.
+- `ADMIN_EMAIL` – the verified account email allowed to access `/admin` and approve download access.
+
+## User approval and administration
+
+Verified users can edit schedules and use every preview immediately, but start with preview-only access. Register the
+email configured in `ADMIN_EMAIL`, verify it, and sign in. The account will automatically have administrator privileges;
+open **File → Admin dashboard** from the workspace or visit `/admin`.
+
+The dashboard shows account, verification, approval, and saved-schedule totals. Administrators can approve or revoke
+download access for verified users. Approved users may print, download DWS files, download teaching-assignment letters,
+and export backups; unapproved users retain preview and editing access.
 
 The database tables are created automatically on first use. Never commit real environment values.
 

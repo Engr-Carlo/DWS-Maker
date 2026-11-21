@@ -4,7 +4,8 @@ import "./globals.css";
 
 const deploymentUrl = process.env.APP_URL
   || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : undefined)
-  || "http://localhost:3000";
+  || "https://dws-maker.vercel.app";
+const socialPreviewUrl = "https://dws-maker.vercel.app/social-preview.jpg?v=2";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,8 @@ export const metadata: Metadata = {
         url: "/social-preview.jpg",
         width: 1200,
         height: 630,
+        secureUrl: socialPreviewUrl,
+        type: "image/jpeg",
         alt: "DWS Maker with the Pamantasan ng Cabuyao main building",
       },
     ],
@@ -46,7 +49,11 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "DWS Maker – Faculty Schedule Workspace",
     description: "Plan teaching loads, preview official forms, and download ready-to-submit DWS documents.",
-    images: ["/social-preview.jpg"],
+    images: [socialPreviewUrl],
+  },
+  other: {
+    "og:image:secure_url": socialPreviewUrl,
+    "thumbnail": socialPreviewUrl,
   },
 };
 
