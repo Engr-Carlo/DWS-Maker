@@ -56,7 +56,18 @@ export const CATEGORIES: CategoryMeta[] = [
 
 export const CATEGORY_BY_ID = Object.fromEntries(CATEGORIES.map((c) => [c.id, c])) as Record<CategoryId, CategoryMeta>;
 
-export const ACTIVITY_IDS: CategoryId[] = ["research", "extension", "consultation", "quasi", "admin", "break"];
+export type ActivityId = "research" | "extension" | "consultation" | "quasi" | "admin" | "break";
+export const ACTIVITY_IDS: ActivityId[] = ["research", "extension", "consultation", "quasi", "admin", "break"];
+export type ActivityHours = Record<ActivityId, number>;
+
+export const emptyActivityHours = (): ActivityHours => ({
+  research: 0,
+  extension: 0,
+  consultation: 0,
+  quasi: 0,
+  admin: 0,
+  break: 0,
+});
 
 export type SubjectKind = "regular" | "overload";
 export type Component = "lec" | "lab";
@@ -118,6 +129,7 @@ export interface DwsState {
   assignment: Assignment;
   subjects: Subject[];
   cells: Cells;
+  activityHours: ActivityHours;
   includeBreak: boolean;
 }
 
@@ -172,7 +184,7 @@ export function resolveBrush(brush: string, subjects: Subject[]): Resolved | nul
     };
   }
   if (brush.startsWith("activity:")) {
-    const id = brush.slice("activity:".length) as CategoryId;
+    const id = brush.slice("activity:".length) as ActivityId;
     if (!ACTIVITY_IDS.includes(id)) return null;
     return { category: id, title: CATEGORY_BY_ID[id].cellLabel, subtitle: "" };
   }
@@ -330,6 +342,7 @@ export function defaultState(): DwsState {
     assignment: defaultAssignment(),
     subjects: [],
     cells: {},
+    activityHours: emptyActivityHours(),
     includeBreak: false,
   };
 }
@@ -401,6 +414,7 @@ export function exampleState(): DwsState {
     },
     subjects,
     cells,
+    activityHours: { research: 3, extension: 3, consultation: 4, quasi: 6, admin: 0, break: 5 },
     includeBreak: false,
   };
 }
@@ -420,6 +434,7 @@ export function sanitizeState(raw: unknown): DwsState | null {
   const so = (r.signoff && typeof r.signoff === "object" ? r.signoff : {}) as Record<string, unknown>;
   const a = (r.assignment && typeof r.assignment === "object" ? r.assignment : {}) as Record<string, unknown>;
   const baseA = base.assignment;
+  const rawActivityHours = (r.activityHours && typeof r.activityHours === "object" ? r.activityHours : {}) as Record<string, unknown>;
 
   const subjects: Subject[] = Array.isArray(r.subjects)
     ? r.subjects.flatMap((item) => {
@@ -450,6 +465,18 @@ export function sanitizeState(raw: unknown): DwsState | null {
   if (r.cells && typeof r.cells === "object") {
     for (const [key, brush] of Object.entries(r.cells as Record<string, unknown>)) {
       if (CELL_KEY.test(key) && typeof brush === "string" && resolveBrush(brush, subjects)) cells[key] = brush;
+    }
+
+  }
+
+  const activityHours = emptyActivityHours();
+  for (const id of ACTIVITY_IDS) {
+    const value = rawActivityHours[id];
+    if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
+      activityHours[id] = value;
+    } else if (!("activityHours" in r)) {
+      const brush = activityBrush(id);
+      activityHours[id] = Object.values(cells).filter((value) => value === brush).length * 0.5;
     }
   }
 
@@ -486,6 +513,7 @@ export function sanitizeState(raw: unknown): DwsState | null {
     },
     subjects,
     cells,
+    activityHours,
     includeBreak: r.includeBreak === true,
   };
 }

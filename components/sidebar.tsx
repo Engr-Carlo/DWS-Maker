@@ -13,6 +13,7 @@ import {
   subjectBrush,
   subjectColor,
   type DwsState,
+  type ActivityId,
   type Profile,
   type Signoff,
   type Subject,
@@ -29,6 +30,7 @@ interface SidebarProps {
   onSplitSubject: (id: string) => string;
   onUpdateSubject: (id: string, patch: Partial<Subject>) => void;
   onRemoveSubject: (id: string) => void;
+  onActivityHours: (id: ActivityId, hours: number) => void;
 }
 
 function Section({ step, title, hint, children, open = true }: { step: number; title: string; hint: string; children: ReactNode; open?: boolean }) {
@@ -264,7 +266,7 @@ function SubjectRow({
   );
 }
 
-export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubject, onSplitSubject, onUpdateSubject, onRemoveSubject }: SidebarProps) {
+export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubject, onSplitSubject, onUpdateSubject, onRemoveSubject, onActivityHours }: SidebarProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const { profile, signoff, subjects, cells } = state;
   const placed = hoursBySubject(cells);
@@ -400,23 +402,46 @@ export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubj
           {ACTIVITY_IDS.map((id) => {
             const meta = CATEGORY_BY_ID[id];
             const selected = brush === activityBrush(id);
+            const target = state.activityHours[id];
+            const current = byCategory[id];
             return (
-              <button
+              <div
                 key={id}
-                type="button"
-                aria-pressed={selected}
-                onClick={() => onBrush(activityBrush(id))}
                 className={cn(
-                  "flex items-center gap-2.5 rounded-lg border bg-white px-3 py-2 text-left transition-colors",
-                  selected ? "border-blue-600 ring-1 ring-blue-600" : "border-gray-200 hover:bg-gray-50",
+                  "rounded-lg border bg-white p-2.5 transition-colors",
+                  selected ? "border-blue-600 ring-1 ring-blue-600" : "border-gray-200",
                 )}
               >
-                <span className="h-7 w-1 shrink-0 rounded-full" style={{ background: meta.edge }} />
-                <span className="min-w-0">
-                  <span className="block truncate text-[13px] font-medium text-gray-900">{meta.name}</span>
-                  <span className="block text-xs text-gray-500">{fmtHours(byCategory[id])} h</span>
-                </span>
-              </button>
+                <button
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => onBrush(activityBrush(id))}
+                  className="flex w-full items-center gap-2.5 text-left"
+                >
+                  <span className="h-7 w-1 shrink-0 rounded-full" style={{ background: meta.edge }} />
+                  <span className="min-w-0">
+                    <span className="block truncate text-[13px] font-medium text-gray-900">{meta.name}</span>
+                    <span className={cn("block text-xs", target > 0 && current >= target ? "text-green-700" : "text-gray-500")}>
+                      {fmtHours(current)} / {fmtHours(target)} h
+                    </span>
+                  </span>
+                </button>
+                <label className="mt-2 flex items-center gap-1.5 text-[11px] text-gray-500">
+                  <span>Target</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={60}
+                    step={0.5}
+                    value={target}
+                    onClick={(event) => event.stopPropagation()}
+                    onChange={(event) => onActivityHours(id, Math.max(0, Number(event.target.value) || 0))}
+                    className="h-7 min-w-0 flex-1 rounded border border-gray-300 bg-white px-2 text-xs text-gray-900 focus:border-blue-600 focus:outline-none"
+                    aria-label={`${meta.name} weekly target hours`}
+                  />
+                  <span>h</span>
+                </label>
+              </div>
             );
           })}
         </div>

@@ -48,6 +48,7 @@ import {
   type Profile,
   type Signoff,
   type Assignment,
+  type ActivityId,
   type SubjectKind,
   type Subject,
 } from "@/lib/dws";
@@ -157,6 +158,7 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
   const [cloudReady, setCloudReady] = useState(false);
   const [syncError, setSyncError] = useState("");
   const [approvalNotice, setApprovalNotice] = useState(false);
+  const [paintNotice, setPaintNotice] = useState("");
 
   const stateRef = useRef(state);
   const snapshot = useRef<Cells | null>(null);
@@ -273,7 +275,31 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
   const handlePaint = (keys: string[], paintBrush: string, erase: boolean) => {
     setState((s) => {
       if (!erase && !resolveBrush(paintBrush, s.subjects)) return s;
-      const next = applyPaint(s.cells, keys, paintBrush, erase);
+      let paintKeys = keys;
+      if (!erase && paintBrush.startsWith("activity:")) {
+        const id = paintBrush.slice("activity:".length) as ActivityId;
+        const target = s.activityHours[id];
+        const placedSlots = Object.values(s.cells).filter((value) => value === paintBrush).length;
+        const remainingSlots = Math.max(0, target * 2 - placedSlots);
+        const availableKeys = [...new Set(keys)].filter((key) => s.cells[key] !== paintBrush);
+        if (target <= 0) {
+          setPaintNotice("Set the weekly target for this activity before plotting it on the grid.");
+          return s;
+        }
+        if (remainingSlots <= 0) {
+          setPaintNotice(`The ${CATEGORY_BY_ID[id].name} target is already complete.`);
+          return s;
+        }
+        paintKeys = availableKeys.slice(0, remainingSlots);
+        if (availableKeys.length > remainingSlots) {
+          setPaintNotice(`Only ${fmtHours(remainingSlots / 2)} h was added to avoid exceeding the ${fmtHours(target)} h target.`);
+        } else {
+          setPaintNotice("");
+        }
+      } else {
+        setPaintNotice("");
+      }
+      const next = applyPaint(s.cells, paintKeys, paintBrush, erase);
       return next === s.cells ? s : { ...s, cells: next };
     });
   };
@@ -540,6 +566,10 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
               onSplitSubject={splitSubject}
               onUpdateSubject={updateSubject}
               onRemoveSubject={removeSubject}
+              onActivityHours={(id, hours) => setState((current) => ({
+                ...current,
+                activityHours: { ...current.activityHours, [id]: hours },
+              }))}
             />
           </aside>
 
@@ -618,6 +648,11 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
                     </Button>
                   </div>
                 </div>
+                {paintNotice && (
+                  <p role="status" className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
+                    {paintNotice}
+                  </p>
+                )}
 
                 <ScheduleGrid
                   cells={cells}
