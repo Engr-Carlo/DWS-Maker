@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Check, CheckCircle2, Clock3, Database, Loader2, RefreshCw, ShieldCheck, Users, X } from "lucide-react";
+import { Check, CheckCircle2, Clock3, Database, Eye, Loader2, RefreshCw, ShieldCheck, Users, X } from "lucide-react";
 import { Button } from "./ui";
 
 interface AdminUser {
@@ -97,6 +97,9 @@ export function AdminDashboard() {
             <h1 className="text-2xl font-black text-slate-950">DWS Maker dashboard</h1>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="#saved-documents" className="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+              Saved documents
+            </Link>
             <Link href="/app" className="rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
               Open workspace
             </Link>
@@ -118,7 +121,7 @@ export function AdminDashboard() {
 
         {error && <p role="alert" className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">{error}</p>}
 
-        <section className="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <section id="saved-documents" className="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-200 px-5 py-4">
             <h2 className="font-bold text-slate-950">User approvals</h2>
             <p className="mt-0.5 text-sm text-slate-500">Only approved users can print or download generated work.</p>
@@ -150,7 +153,15 @@ export function AdminDashboard() {
                           {user.verified ? "Verified" : "Unverified"}
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-slate-600">{user.hasSchedule ? "Saved" : "Not started"}</td>
+                      <td className="px-4 py-4">
+                        {user.hasSchedule ? (
+                          <Link href={`/admin/schedules/${user.id}`} className="inline-flex items-center gap-1.5 font-semibold text-blue-700 hover:text-blue-800">
+                            <Eye className="h-3.5 w-3.5" /> View DWS / TL
+                          </Link>
+                        ) : (
+                          <span className="text-slate-500">Not started</span>
+                        )}
+                      </td>
                       <td className="px-4 py-4">
                         <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${user.approved ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
                           {user.approved ? "Approved" : "Preview only"}

@@ -18,7 +18,7 @@ import {
   type DwsState,
 } from "@/lib/dws";
 
-const PAGE_WIDTH = 816;
+export const PAGE_WIDTH = 816;
 const BORDER = "1px solid #000";
 
 const cellBase: CSSProperties = { border: BORDER, padding: "0 3px", textAlign: "center", verticalAlign: "middle" };
