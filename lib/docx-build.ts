@@ -91,8 +91,8 @@ function labelled(label: string, value: string, width: number) {
     children: [new Paragraph({
       spacing: { before: 40, after: 40 },
       children: [
-        run(`${label} `, { bold: true, size: 20 }),
-        run(value, { bold: true, underline: true, size: 20 }),
+        run(`${label} `, { bold: true, size: 18 }),
+        run(value, { bold: true, underline: true, size: 18 }),
       ],
     })],
   });
@@ -185,7 +185,7 @@ function buildScheduleTable(state: DwsState) {
         width: dxa(TIME_COL),
         borders: allLines,
         verticalAlign: VerticalAlign.CENTER,
-        children: [para(slotLabel(slot), { align: AlignmentType.CENTER, size: 18 })],
+        children: [para(slotLabel(slot), { align: AlignmentType.CENTER, size: 16 })],
       }),
     ];
 
@@ -204,7 +204,7 @@ function buildScheduleTable(state: DwsState) {
             borders: allLines,
             verticalAlign: VerticalAlign.CENTER,
             shading: { type: ShadingType.CLEAR, color: "auto", fill: meta.fill.replace("#", "") },
-            children: lines.map((line) => para(line, { align: AlignmentType.CENTER, size: 18, bold: view.res.category === "regular" || view.res.category === "overload", color })),
+            children: lines.map((line) => para(line, { align: AlignmentType.CENTER, size: 16, bold: view.res.category === "regular" || view.res.category === "overload", color })),
           }),
         );
       } else {
@@ -355,7 +355,7 @@ export function buildDocument(state: DwsState, images: DocxImages): Document {
   return new Document({
     creator: "DWS Maker",
     title: "Declaration of Work Schedule",
-    styles: { default: { document: { run: { font: FONT, size: 20 } } } },
+    styles: { default: { document: { run: { font: FONT, size: 18 } } } },
     sections: [
       {
         properties: {

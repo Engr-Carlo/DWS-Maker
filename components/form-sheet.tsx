@@ -84,7 +84,7 @@ export function FormSheet({ state }: { state: DwsState }) {
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.35fr 1fr", rowGap: 3, columnGap: 12, marginTop: 10, fontSize: 11 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1.35fr 1fr", rowGap: 3, columnGap: 12, marginTop: 10, fontSize: 9 }}>
         <div>
           <b>NAME:</b> <u><b>{profile.name}</b></u>
         </div>
@@ -119,7 +119,7 @@ export function FormSheet({ state }: { state: DwsState }) {
         <tbody>
           {Array.from({ length: SLOT_COUNT }, (_, slot) => (
             <tr key={slot} style={{ height: 22 }}>
-              <td style={{ ...cellBase, fontSize: 9, whiteSpace: "nowrap" }}>{slotLabel(slot)}</td>
+              <td style={{ ...cellBase, fontSize: 8, whiteSpace: "nowrap" }}>{slotLabel(slot)}</td>
               {DAY_NAMES.map((day, d) => {
                 const view = grid[slot][d];
                 if (view && !view.start) return null;
@@ -129,7 +129,7 @@ export function FormSheet({ state }: { state: DwsState }) {
                   <td
                     key={day}
                     rowSpan={view.length}
-                    style={{ ...cellBase, background: meta.fill, color: meta.formInk, fontSize: 9, fontWeight: 700, lineHeight: 1.2 }}
+                    style={{ ...cellBase, background: meta.fill, color: meta.formInk, fontSize: 8, fontWeight: 700, lineHeight: 1.2 }}
                   >
                     {view.length === 1 ? (
                       [view.res.title, view.res.subtitle].filter(Boolean).join(" ")
@@ -186,7 +186,7 @@ export function FormSheet({ state }: { state: DwsState }) {
         <div style={{ borderTop: BORDER, textAlign: "center", fontWeight: 700, fontSize: 11, paddingTop: 2, minHeight: 16 }}>{profile.name}</div>
         <div style={{ textAlign: "center", fontSize: 9 }}>Signature over Printed Name</div>
       </div>
-      <div style={{ marginTop: 10, fontSize: 11 }}>Effectivity Date: {formatLongDate(profile.effectivityDate)}</div>
+      <div style={{ marginTop: 10, fontSize: 9 }}>Effectivity Date: {formatLongDate(profile.effectivityDate)}</div>
 
       <Image
         src="/form/tagline.png"
