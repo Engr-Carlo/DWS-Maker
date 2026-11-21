@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  background: #ffffff;
+  color: #111827;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button:not(:disabled),
+summary {
+  cursor: pointer;
+}
+
+@keyframes welcome-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.65) rotate(-10deg);
+  }
+  70% {
+    transform: scale(1.08) rotate(3deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -18px, 0) rotate(0);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--drift, 0), 250px, 0) rotate(540deg);
+  }
+}
+
+.celebration-confetti {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 230px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.celebration-confetti i {
+  --drift: 24px;
+  position: absolute;
+  top: 0;
+  left: calc(8% + var(--index, 0) * 7.6%);
+  width: 7px;
+  height: 14px;
+  border-radius: 2px;
+  background: #2563eb;
+  animation: confetti-fall 1.8s ease-in both;
+  animation-delay: calc(var(--index, 0) * 70ms);
+}
+
+.celebration-confetti i:nth-child(2n) {
+  --drift: -28px;
+  background: #dc2626;
+}
+
+.celebration-confetti i:nth-child(3n) {
+  background: #f59e0b;
+}
+
+.celebration-confetti i:nth-child(1) { --index: 0; }
+.celebration-confetti i:nth-child(2) { --index: 1; }
+.celebration-confetti i:nth-child(3) { --index: 2; }
+.celebration-confetti i:nth-child(4) { --index: 3; }
+.celebration-confetti i:nth-child(5) { --index: 4; }
+.celebration-confetti i:nth-child(6) { --index: 5; }
+.celebration-confetti i:nth-child(7) { --index: 6; }
+.celebration-confetti i:nth-child(8) { --index: 7; }
+.celebration-confetti i:nth-child(9) { --index: 8; }
+.celebration-confetti i:nth-child(10) { --index: 9; }
+.celebration-confetti i:nth-child(11) { --index: 10; }
+.celebration-confetti i:nth-child(12) { --index: 11; }
+
+.slot-empty:hover {
+  background-color: var(--brush-tint, #f3f4f6);
+}
+
+@page {
+  size: 8.5in 13in;
+  margin: 0;
+}
+
+@media print {
+  html,
+  body {
+    margin: 0;
+    background: #ffffff !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
