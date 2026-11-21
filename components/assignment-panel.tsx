@@ -63,42 +63,35 @@ function LoadCard({ state, kind, busy, onDownload }: { state: DwsState; kind: Su
   }, []);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <span className="h-7 w-1 rounded-full" style={{ background: regular ? "#3B8F45" : "#DC2626" }} />
-          <div>
-            <h3 className="text-2xl font-bold tracking-tight text-gray-900">{regular ? "Regular load" : "Overload"}</h3>
-            <p className="text-sm text-gray-500">{regular ? "First letter — your 24-hour teaching load" : "Second letter — everything beyond the regular load"}</p>
+    <div className="flex min-h-0 flex-col gap-4 lg:flex-row lg:items-start">
+      <div ref={previewContainer} className="min-h-[calc(100vh-14rem)] min-w-0 flex-1 overflow-y-auto bg-gray-100 px-4 py-7 sm:px-7">
+        <div className="mx-auto shadow-md ring-1 ring-gray-300" style={{ width: SHEET_WIDTH * previewScale, height: 1248 * previewScale }}>
+          <div style={{ transform: `scale(${previewScale})`, transformOrigin: "top left" }}>
+            <AssignmentSheet state={state} kind={kind} model={model} />
           </div>
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-4">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-          <dl className="grid grid-cols-3 gap-2 lg:w-32 lg:shrink-0 lg:grid-cols-1">
+      <aside className="w-full shrink-0 space-y-3 lg:w-52">
+        <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+            Document summary
+          </p>
+          <dl className="grid grid-cols-3 gap-2 lg:grid-cols-1">
             {[
               ["Hours", formatNumber(model.totalHours)],
               ["Units", formatNumber(model.totalUnits)],
               ["Classes", String(model.rows.length)],
             ].map(([label, value]) => (
-              <div key={label} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 lg:border-0 lg:bg-slate-950 lg:text-white">
-                <dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 lg:text-slate-400">{label}</dt>
-                <dd className="mt-0.5 text-2xl font-bold tabular-nums text-slate-950 lg:text-white">{value}</dd>
+              <div key={label} className="rounded-lg bg-slate-50 px-3 py-2.5">
+                <dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">{label}</dt>
+                <dd className="mt-0.5 text-2xl font-bold tabular-nums text-slate-900">{value}</dd>
               </div>
             ))}
           </dl>
-
-          <div ref={previewContainer} className="min-w-0 flex-1 overflow-y-auto rounded-xl border border-gray-200 bg-gray-100 px-4 py-6">
-            <div className="mx-auto shadow-md ring-1 ring-gray-300" style={{ width: SHEET_WIDTH * previewScale, height: 1248 * previewScale }}>
-              <div style={{ transform: `scale(${previewScale})`, transformOrigin: "top left" }}>
-                <AssignmentSheet state={state} kind={kind} model={model} />
-              </div>
-            </div>
-          </div>
         </div>
 
-        <div className="mt-4 space-y-1 text-sm">
+        <div className="space-y-2 text-xs leading-5">
           {total === 0 && <p className="text-gray-500">No {regular ? "regular" : "overload"} subjects yet. Add them in step 2 on the left and set the load type.</p>}
           {model.unplaced.length > 0 && (
             <p className="flex items-start gap-1.5 text-amber-700">
@@ -120,13 +113,13 @@ function LoadCard({ state, kind, busy, onDownload }: { state: DwsState; kind: Su
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-between gap-3 border-t border-gray-200 pt-3">
-          <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-gray-500">Generated docx</span>
-          <Button size="sm" variant="secondary" disabled={busy || model.rows.length === 0} onClick={() => onDownload([kind])}>
-            <Download className="h-3.5 w-3.5" /> Download
+        <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Generated file</p>
+          <Button className="mt-2 w-full" size="sm" variant="primary" disabled={busy || model.rows.length === 0} onClick={() => onDownload([kind])}>
+            <Download className="h-3.5 w-3.5" /> Download DOCX
           </Button>
         </div>
-      </div>
+      </aside>
     </div>
   );
 }
@@ -228,7 +221,7 @@ export function AssignmentPreviewPanel({ state, busy, onDownload }: { state: Dws
             Review one teaching-assignment letter at a time at full preview size.
           </p>
         </div>
-        <div className="inline-flex w-full rounded-full bg-slate-950 p-1.5 shadow-lg shadow-slate-300/40 ring-1 ring-white/10 lg:w-auto">
+        <div className="inline-flex w-full rounded-lg border border-slate-200 bg-white p-1 shadow-sm lg:w-auto">
           {(["regular", "overload"] as const).map((option) => (
             <button
               key={option}
@@ -236,13 +229,12 @@ export function AssignmentPreviewPanel({ state, busy, onDownload }: { state: Dws
               aria-pressed={kind === option}
               onClick={() => setKind(option)}
               className={cn(
-                "flex h-10 flex-1 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold capitalize transition-all duration-200 lg:min-w-36 lg:flex-none",
+                "flex h-9 flex-1 items-center justify-center rounded-md px-5 text-sm font-semibold capitalize transition-all duration-200 lg:min-w-32 lg:flex-none",
                 kind === option
-                  ? "bg-white text-slate-950 shadow-[0_1px_8px_rgba(255,255,255,.3)]"
-                  : "text-slate-300 hover:bg-white/10 hover:text-white",
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
               )}
             >
-              <span className="h-2 w-2 rounded-full" style={{ background: option === "regular" ? "#3B8F45" : "#DC2626" }} />
               {option === "regular" ? "Regular load" : "Overload"}
             </button>
           ))}
