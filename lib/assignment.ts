@@ -20,6 +20,8 @@ const DAY_ABBR = ["M", "T", "W", "Th", "F", "S"];
 export interface LoadRow {
   subject: Subject;
   room: string;
+  dayLabel?: string;
+  timeLabel?: string;
   days: number[];
   startSlot: number;
   endSlot: number;
@@ -152,12 +154,7 @@ export function buildAssignment(state: DwsState, kind: SubjectKind): AssignmentM
     const key = JSON.stringify([
       row.subject.code.trim().toUpperCase(),
       row.subject.section.trim().toUpperCase(),
-      row.subject.title.trim(),
       row.subject.component,
-      row.subject.startDate,
-      row.days,
-      row.startSlot,
-      row.endSlot,
     ]);
     const existing = combinedRows.get(key);
     if (!existing) {
@@ -171,6 +168,14 @@ export function buildAssignment(state: DwsState, kind: SubjectKind): AssignmentM
     existing.room = [...new Set(rooms)].join(" / ");
     existing.hours += row.hours;
     existing.units += row.units;
+    existing.dayLabel = [...new Set([
+      existing.dayLabel || dayCode(existing.days),
+      dayCode(row.days),
+    ])].join(" / ");
+    existing.timeLabel = [...new Set([
+      existing.timeLabel || timeRange(existing.startSlot, existing.endSlot, true),
+      timeRange(row.startSlot, row.endSlot, true),
+    ])].join(" / ");
   }
   const finalRows = [...combinedRows.values()];
 

@@ -196,8 +196,8 @@ function classTable(state: DwsState, model: AssignmentModel) {
   const body = model.rows.map((r) => [
     `${r.subject.code} ${r.subject.section}`.trim(),
     r.subject.title,
-    dayCode(r.days),
-    timeRange(r.startSlot, r.endSlot, true),
+    r.dayLabel || dayCode(r.days),
+    r.timeLabel || timeRange(r.startSlot, r.endSlot, true),
     r.subject.component === "lab" ? "Lab" : "Lec",
     r.room,
     formatNumber(r.units),
