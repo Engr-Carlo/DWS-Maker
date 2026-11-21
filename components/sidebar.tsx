@@ -11,6 +11,7 @@ import {
   hoursByCategory,
   hoursBySubject,
   subjectBrush,
+  subjectColor,
   type DwsState,
   type Profile,
   type Signoff,
@@ -115,16 +116,16 @@ function SubjectRow({
   onUpdate: (patch: Partial<Subject>) => void;
   onRemove: () => void;
 }) {
-  const meta = CATEGORY_BY_ID[subject.kind];
+  const subjectPalette = subjectColor(subject);
   const complete = placed === subject.hours && subject.hours > 0;
   const over = placed > subject.hours;
   const percent = subject.hours > 0 ? Math.min(100, (placed / subject.hours) * 100) : 0;
 
   return (
-    <li className={cn("overflow-hidden rounded-lg border bg-white", selected ? "border-blue-600 ring-1 ring-blue-600" : "border-gray-200")}>
+    <li className="overflow-hidden rounded-lg border bg-white" style={selected ? { borderColor: subjectPalette.edge, boxShadow: `0 0 0 1px ${subjectPalette.edge}` } : { borderColor: "#E5E7EB" }}>
       <div className="flex items-stretch">
         <button type="button" onClick={onSelect} aria-pressed={selected} className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-left">
-          <span className="h-9 w-1 shrink-0 rounded-full" style={{ background: meta.edge }} />
+          <span className="h-9 w-1 shrink-0 rounded-full" style={{ background: subjectPalette.edge }} />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium text-gray-900">
               {subject.code || "New subject"}
@@ -158,7 +159,7 @@ function SubjectRow({
       <div className="h-1 bg-gray-100">
         <div
           className="h-full transition-all"
-          style={{ width: `${percent}%`, background: over ? "#D97706" : complete ? "#16A34A" : "#2563EB" }}
+          style={{ width: `${percent}%`, background: over ? "#D97706" : complete ? subjectPalette.edge : subjectPalette.edge }}
         />
       </div>
 

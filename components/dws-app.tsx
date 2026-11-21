@@ -38,6 +38,7 @@ import {
   newId,
   newSubject,
   resolveBrush,
+  subjectColor,
   sanitizeState,
   saveState,
   subjectBrush,
@@ -420,7 +421,13 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
     const res = resolveBrush(brush, subjects);
     if (!res) return { label: "Nothing selected", color: "#D1D5DB" };
     const label = res.subtitle ? `${res.title} · ${res.subtitle}` : res.title;
-    return { label: brush.startsWith("activity:") ? CATEGORY_BY_ID[res.category].name : label, color: CATEGORY_BY_ID[res.category].edge };
+    const subject = brush.startsWith("subject:")
+      ? subjects.find((item) => item.id === brush.slice("subject:".length))
+      : null;
+    return {
+      label: brush.startsWith("activity:") ? CATEGORY_BY_ID[res.category].name : label,
+      color: subject ? subjectColor(subject).edge : CATEGORY_BY_ID[res.category].edge,
+    };
   })();
 
   return (

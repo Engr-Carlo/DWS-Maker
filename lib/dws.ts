@@ -130,6 +130,33 @@ export interface Resolved {
   category: CategoryId;
   title: string;
   subtitle: string;
+  soft?: string;
+  ink?: string;
+  edge?: string;
+}
+
+const SUBJECT_COLORS = [
+  { edge: "#4F46E5", soft: "#EEF2FF", ink: "#312E81" },
+  { edge: "#0F766E", soft: "#CCFBF1", ink: "#134E4A" },
+  { edge: "#C026D3", soft: "#FAE8FF", ink: "#701A75" },
+  { edge: "#EA580C", soft: "#FFEDD5", ink: "#7C2D12" },
+  { edge: "#0284C7", soft: "#E0F2FE", ink: "#075985" },
+  { edge: "#BE123C", soft: "#FFE4E6", ink: "#881337" },
+  { edge: "#15803D", soft: "#DCFCE7", ink: "#14532D" },
+  { edge: "#7C3AED", soft: "#EDE9FE", ink: "#4C1D95" },
+];
+
+function hashText(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index++) hash = ((hash << 5) - hash + value.charCodeAt(index)) | 0;
+  return Math.abs(hash);
+}
+
+export function subjectColor(subject: Subject) {
+  const family = SUBJECT_COLORS[hashText(subject.groupId || subject.id) % SUBJECT_COLORS.length];
+  if (!subject.groupId) return family;
+  const alternate = hashText(subject.id) % 2 === 0;
+  return alternate ? family : { edge: family.ink, soft: family.soft, ink: family.ink };
 }
 
 export function resolveBrush(brush: string, subjects: Subject[]): Resolved | null {
@@ -137,6 +164,7 @@ export function resolveBrush(brush: string, subjects: Subject[]): Resolved | nul
     const id = brush.slice("subject:".length);
     const subject = subjects.find((s) => s.id === id);
     if (!subject) return null;
+    const colors = subjectColor(subject);
     return {
       category: subject.kind,
       title: subject.code.trim() || "Subject",
@@ -145,6 +173,7 @@ export function resolveBrush(brush: string, subjects: Subject[]): Resolved | nul
         subject.component.toUpperCase(),
         subject.room.trim(),
       ].filter(Boolean).join(" · "),
+      ...colors,
     };
   }
   if (brush.startsWith("activity:")) {
