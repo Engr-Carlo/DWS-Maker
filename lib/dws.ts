@@ -130,9 +130,6 @@ export interface Resolved {
   category: CategoryId;
   title: string;
   subtitle: string;
-  soft?: string;
-  ink?: string;
-  edge?: string;
 }
 
 const SUBJECT_COLORS = [
@@ -164,7 +161,6 @@ export function resolveBrush(brush: string, subjects: Subject[]): Resolved | nul
     const id = brush.slice("subject:".length);
     const subject = subjects.find((s) => s.id === id);
     if (!subject) return null;
-    const colors = subjectColor(subject);
     return {
       category: subject.kind,
       title: subject.code.trim() || "Subject",
@@ -173,7 +169,6 @@ export function resolveBrush(brush: string, subjects: Subject[]): Resolved | nul
         subject.component.toUpperCase(),
         subject.room.trim(),
       ].filter(Boolean).join(" · "),
-      ...colors,
     };
   }
   if (brush.startsWith("activity:")) {

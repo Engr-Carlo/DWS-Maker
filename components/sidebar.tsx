@@ -325,19 +325,27 @@ export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubj
               const leader = members[0];
               const assigned = members.reduce((sum, member) => sum + member.hours, 0);
               const completed = members.reduce((sum, member) => sum + (placed[member.id] ?? 0), 0);
+              const palette = subjectColor(leader);
               return (
-                <li key={leader.groupId || leader.id} className={cn(split && "rounded-xl border border-blue-200 bg-blue-50/40 p-2.5")}>
+                <li
+                  key={leader.groupId || leader.id}
+                  className={cn("rounded-xl", split && "border p-2.5")}
+                  style={split ? {
+                    borderColor: `${palette.edge}45`,
+                    background: palette.soft,
+                  } : undefined}
+                >
                   {split && (
                     <div className="mb-2 px-1">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="truncate text-xs font-bold uppercase tracking-wide text-blue-900">
+                        <p className="truncate text-xs font-bold uppercase tracking-wide" style={{ color: palette.ink }}>
                           {leader.code || "Subject"}{leader.section ? ` · ${leader.section}` : ""}
                         </p>
-                        <span className="shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                        <span className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ color: palette.ink, background: `${palette.edge}18` }}>
                           {members.length} parts
                         </span>
                       </div>
-                      <p className="mt-0.5 text-[11px] text-blue-700">
+                      <p className="mt-0.5 text-[11px]" style={{ color: palette.ink }}>
                         One subject · {fmtHours(completed)} of {fmtHours(assigned)} h placed
                       </p>
                     </div>

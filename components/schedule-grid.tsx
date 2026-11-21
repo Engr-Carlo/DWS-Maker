@@ -46,11 +46,6 @@ const ROW_HEIGHT = 28;
 
 function Block({ view }: { view: CellView }) {
   const meta = CATEGORY_BY_ID[view.res.category];
-  const colors = {
-    soft: view.res.soft || meta.soft,
-    ink: view.res.ink || meta.ink,
-    edge: view.res.edge || meta.edge,
-  };
   const { title, subtitle } = view.res;
   return (
     <div
@@ -60,9 +55,9 @@ function Block({ view }: { view: CellView }) {
         right: 2,
         top: 1,
         height: view.length * ROW_HEIGHT - 3,
-        background: colors.soft,
-        color: colors.ink,
-        boxShadow: `inset 3px 0 0 ${colors.edge}`,
+        background: meta.soft,
+        color: meta.ink,
+        boxShadow: `inset 3px 0 0 ${meta.edge}`,
       }}
     >
       <div className="pt-[5px] pl-1 leading-tight">
@@ -126,8 +121,7 @@ export function ScheduleGrid({ cells, subjects, brush, onStrokeStart, onPaint, o
     if (at) paintAt(at.day, at.slot);
   };
 
-  const resolvedBrush = brush === ERASER ? null : resolveBrush(brush, subjects);
-  const tint = brush === ERASER ? "#F3F4F6" : resolvedBrush?.soft || CATEGORY_BY_ID[resolvedBrush?.category ?? "regular"].soft;
+  const tint = brush === ERASER ? "#F3F4F6" : CATEGORY_BY_ID[resolveBrush(brush, subjects)?.category ?? "regular"].soft;
 
   return (
     <div className="overflow-clip rounded-lg border border-gray-200 bg-white">
