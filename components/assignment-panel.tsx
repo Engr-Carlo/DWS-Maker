@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Download } from "lucide-react";
 import { Button, Field, inputClass } from "./ui";
 import { AssignmentSheet, SHEET_WIDTH } from "./assignment-sheet";
@@ -45,11 +45,22 @@ function Card({ title, hint, children, className }: { title: string; hint?: stri
 }
 
 function LoadCard({ state, kind, busy, onDownload }: { state: DwsState; kind: SubjectKind; busy: boolean; onDownload: (kinds: SubjectKind[]) => void }) {
+  const previewContainer = useRef<HTMLDivElement>(null);
+  const [previewScale, setPreviewScale] = useState(0.7);
   const model = useMemo(() => buildAssignment(state, kind), [state, kind]);
   const total = state.subjects.filter((s) => s.kind === kind).length;
   const regular = kind === "regular";
   const off = regular && model.rows.length > 0 && model.totalHours !== REGULAR_TARGET_HOURS;
-  const previewScale = 0.35;
+
+  useEffect(() => {
+    const element = previewContainer.current;
+    if (!element) return;
+    const observer = new ResizeObserver(([entry]) => {
+      setPreviewScale(Math.min(1, entry.contentRect.width / SHEET_WIDTH));
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -99,17 +110,9 @@ function LoadCard({ state, kind, busy, onDownload }: { state: DwsState; kind: Su
           )}
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-stone-50">
-          <div className="flex max-h-[470px] justify-center overflow-auto bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.9),_rgba(244,244,245,0.96))] p-3">
-            <div
-              style={{
-                width: SHEET_WIDTH,
-                height: 1248,
-                transform: `scale(${previewScale})`,
-                transformOrigin: "top center",
-              }}
-              className="origin-top"
-            >
+        <div ref={previewContainer} className="mt-4 overflow-y-auto rounded-xl border border-gray-200 bg-gray-100 px-4 py-6">
+          <div className="mx-auto shadow-md ring-1 ring-gray-300" style={{ width: SHEET_WIDTH * previewScale, height: 1248 * previewScale }}>
+            <div style={{ transform: `scale(${previewScale})`, transformOrigin: "top left" }}>
               <AssignmentSheet state={state} kind={kind} model={model} />
             </div>
           </div>
@@ -212,19 +215,37 @@ export function AssignmentPanel({ state, onAssignment }: PanelProps) {
 }
 
 export function AssignmentPreviewPanel({ state, busy, onDownload }: { state: DwsState; busy: boolean; onDownload: (kinds: SubjectKind[]) => void }) {
+  const [kind, setKind] = useState<SubjectKind>("regular");
+
   return (
-    <div className="mx-auto max-w-[1280px] space-y-6 p-4 sm:p-6">
-      <div>
-        <h2 className="text-4xl font-bold tracking-tight text-gray-900">Teachload preview</h2>
-        <p className="mt-1 max-w-3xl text-base text-gray-600">
-          Review the regular and overload teaching assignment letters. Update each subject in the subject editor on the left, then use the download actions at the bottom of each preview card.
-        </p>
+    <div className="mx-auto max-w-[1100px] space-y-5 p-4 sm:p-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Teachload preview</h2>
+          <p className="mt-1 max-w-2xl text-sm text-gray-600 sm:text-base">
+            Review one teaching-assignment letter at a time at full preview size.
+          </p>
+        </div>
+        <div className="inline-flex w-full rounded-xl border border-slate-200 bg-slate-100 p-1 shadow-sm lg:w-auto">
+          {(["regular", "overload"] as const).map((option) => (
+            <button
+              key={option}
+              type="button"
+              aria-pressed={kind === option}
+              onClick={() => setKind(option)}
+              className={cn(
+                "flex h-10 flex-1 items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold capitalize transition-all lg:flex-none",
+                kind === option ? "bg-white text-slate-950 shadow-sm ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-800",
+              )}
+            >
+              <span className="h-2 w-2 rounded-full" style={{ background: option === "regular" ? "#3B8F45" : "#DC2626" }} />
+              {option === "regular" ? "Regular load" : "Overload"}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-2">
-        <LoadCard state={state} kind="regular" busy={busy} onDownload={onDownload} />
-        <LoadCard state={state} kind="overload" busy={busy} onDownload={onDownload} />
-      </div>
+      <LoadCard state={state} kind={kind} busy={busy} onDownload={onDownload} />
     </div>
   );
 }

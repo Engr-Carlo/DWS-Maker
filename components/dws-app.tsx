@@ -6,7 +6,10 @@ import Image from "next/image";
 import { saveAs } from "file-saver";
 import {
   Download,
+  CalendarDays,
+  Eye,
   Eraser,
+  FileText,
   FileDown,
   FolderOpen,
   LayoutTemplate,
@@ -403,26 +406,32 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
             </div>
           </div>
 
-          <nav className="mx-auto flex rounded-lg bg-gray-100 p-0.5 text-sm" aria-label="View">
+          <nav className="mx-auto flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1 text-sm shadow-sm" aria-label="View">
             {(
               [
-                ["schedule", "Schedule"],
-                ["preview", "Form preview"],
-                ["assignment", "Teaching assignment"],
-                ["assignment-preview", "Teachload preview"],
+                ["schedule", "Schedule", CalendarDays],
+                ["preview", "Form preview", Eye],
+                ["assignment", "Teaching assignment", FileText],
+                ["assignment-preview", "Teachload preview", Eye],
               ] as const
-            ).map(([id, label]) => (
+            ).map(([id, label, Icon]) => (
               <button
                 key={id}
                 type="button"
                 aria-current={view === id ? "page" : undefined}
                 onClick={() => setView(id)}
                 className={cn(
-                  "h-8 rounded-md px-3 font-medium transition-colors",
-                  view === id ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900",
+                  "group relative inline-flex h-8 items-center gap-1.5 rounded-lg px-3 font-semibold transition-all duration-200",
+                  view === id
+                    ? "bg-slate-900 text-white shadow-sm shadow-slate-300/60"
+                    : "text-slate-500 hover:bg-white hover:text-slate-900 hover:shadow-sm",
                 )}
               >
-                {label}
+                <Icon className={cn("h-3.5 w-3.5 transition-transform group-hover:scale-105", view === id ? "text-white" : "text-slate-400")} />
+                <span className="hidden xl:inline">{label}</span>
+                <span className="xl:hidden">
+                  {id === "preview" ? "Form" : id === "assignment" ? "Assignment" : id === "assignment-preview" ? "Teachload" : "Schedule"}
+                </span>
               </button>
             ))}
           </nav>
