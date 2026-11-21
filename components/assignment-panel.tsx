@@ -64,7 +64,7 @@ function LoadCard({ state, kind, busy, onDownload }: { state: DwsState; kind: Su
 
   return (
     <div className="flex min-h-0 flex-col gap-4 lg:flex-row lg:items-start">
-      <div ref={previewContainer} className="min-h-[calc(100vh-14rem)] min-w-0 flex-1 overflow-y-auto bg-gray-100 px-4 py-7 sm:px-7">
+      <div ref={previewContainer} className="min-h-[calc(100vh-8.5rem)] min-w-0 flex-1 overflow-y-auto bg-gray-100 px-4 py-3 sm:px-5">
         <div className="mx-auto shadow-md ring-1 ring-gray-300" style={{ width: SHEET_WIDTH * previewScale, height: 1248 * previewScale }}>
           <div style={{ transform: `scale(${previewScale})`, transformOrigin: "top left" }}>
             <AssignmentSheet state={state} kind={kind} model={model} />
@@ -213,7 +213,7 @@ export function AssignmentPreviewPanel({ state, busy, onDownload }: { state: Dws
   const [kind, setKind] = useState<SubjectKind>("regular");
 
   return (
-    <div className="mx-auto max-w-[1100px] space-y-5 p-4 sm:p-6">
+    <div className="mx-auto max-w-[1100px] space-y-2 p-2 sm:p-3">
       <div className="flex justify-end">
         <div className="inline-flex w-full max-w-52 rounded-lg border border-slate-200 bg-white p-0.5 shadow-sm">
           {(["regular", "overload"] as const).map((option) => (
