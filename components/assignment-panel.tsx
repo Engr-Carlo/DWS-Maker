@@ -75,20 +75,30 @@ function LoadCard({ state, kind, busy, onDownload }: { state: DwsState; kind: Su
       </div>
 
       <div className="flex flex-1 flex-col p-4">
-        <dl className="grid grid-cols-3 gap-2">
-          {[
-            ["Hours", formatNumber(model.totalHours)],
-            ["Units", formatNumber(model.totalUnits)],
-            ["Classes", String(model.rows.length)],
-          ].map(([label, value]) => (
-            <div key={label} className="rounded-md bg-gray-50 px-3 py-3">
-              <dt className="text-[11px] font-medium uppercase tracking-wide text-gray-500">{label}</dt>
-              <dd className="mt-1 text-3xl font-semibold tabular-nums text-gray-900">{value}</dd>
-            </div>
-          ))}
-        </dl>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+          <dl className="grid grid-cols-3 gap-2 lg:w-32 lg:shrink-0 lg:grid-cols-1">
+            {[
+              ["Hours", formatNumber(model.totalHours)],
+              ["Units", formatNumber(model.totalUnits)],
+              ["Classes", String(model.rows.length)],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 lg:border-0 lg:bg-slate-950 lg:text-white">
+                <dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 lg:text-slate-400">{label}</dt>
+                <dd className="mt-0.5 text-2xl font-bold tabular-nums text-slate-950 lg:text-white">{value}</dd>
+              </div>
+            ))}
+          </dl>
 
-        <div className="mt-4 min-h-[3rem] space-y-1 text-sm">
+          <div ref={previewContainer} className="min-w-0 flex-1 overflow-y-auto rounded-xl border border-gray-200 bg-gray-100 px-4 py-6">
+            <div className="mx-auto shadow-md ring-1 ring-gray-300" style={{ width: SHEET_WIDTH * previewScale, height: 1248 * previewScale }}>
+              <div style={{ transform: `scale(${previewScale})`, transformOrigin: "top left" }}>
+                <AssignmentSheet state={state} kind={kind} model={model} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 space-y-1 text-sm">
           {total === 0 && <p className="text-gray-500">No {regular ? "regular" : "overload"} subjects yet. Add them in step 2 on the left and set the load type.</p>}
           {model.unplaced.length > 0 && (
             <p className="flex items-start gap-1.5 text-amber-700">
@@ -108,14 +118,6 @@ function LoadCard({ state, kind, busy, onDownload }: { state: DwsState; kind: Su
               <CheckCircle2 className="h-4 w-4" /> Matches the {REGULAR_TARGET_HOURS}-hour regular load.
             </p>
           )}
-        </div>
-
-        <div ref={previewContainer} className="mt-4 overflow-y-auto rounded-xl border border-gray-200 bg-gray-100 px-4 py-6">
-          <div className="mx-auto shadow-md ring-1 ring-gray-300" style={{ width: SHEET_WIDTH * previewScale, height: 1248 * previewScale }}>
-            <div style={{ transform: `scale(${previewScale})`, transformOrigin: "top left" }}>
-              <AssignmentSheet state={state} kind={kind} model={model} />
-            </div>
-          </div>
         </div>
 
         <div className="mt-4 flex items-center justify-between gap-3 border-t border-gray-200 pt-3">
@@ -226,7 +228,7 @@ export function AssignmentPreviewPanel({ state, busy, onDownload }: { state: Dws
             Review one teaching-assignment letter at a time at full preview size.
           </p>
         </div>
-        <div className="inline-flex w-full rounded-xl border border-slate-200 bg-slate-100 p-1 shadow-sm lg:w-auto">
+        <div className="inline-flex w-full rounded-full bg-slate-950 p-1.5 shadow-lg shadow-slate-300/40 ring-1 ring-white/10 lg:w-auto">
           {(["regular", "overload"] as const).map((option) => (
             <button
               key={option}
@@ -234,8 +236,10 @@ export function AssignmentPreviewPanel({ state, busy, onDownload }: { state: Dws
               aria-pressed={kind === option}
               onClick={() => setKind(option)}
               className={cn(
-                "flex h-10 flex-1 items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold capitalize transition-all lg:flex-none",
-                kind === option ? "bg-white text-slate-950 shadow-sm ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-800",
+                "flex h-10 flex-1 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold capitalize transition-all duration-200 lg:min-w-36 lg:flex-none",
+                kind === option
+                  ? "bg-white text-slate-950 shadow-[0_1px_8px_rgba(255,255,255,.3)]"
+                  : "text-slate-300 hover:bg-white/10 hover:text-white",
               )}
             >
               <span className="h-2 w-2 rounded-full" style={{ background: option === "regular" ? "#3B8F45" : "#DC2626" }} />
