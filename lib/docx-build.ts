@@ -38,8 +38,8 @@ export interface DocxImages {
 
 const FONT = "Arial";
 const CONTENT_WIDTH = 9990;
-const TIME_COL = 1500;
-const DAY_COL = 1415;
+const TIME_COL = 1650;
+const DAY_COL = 1390;
 
 const NONE = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
 const LINE = { style: BorderStyle.SINGLE, size: 4, color: "000000" };
@@ -91,8 +91,8 @@ function labelled(label: string, value: string, width: number) {
     children: [new Paragraph({
       spacing: { before: 40, after: 40 },
       children: [
-        run(`${label} `, { bold: true, size: 18 }),
-        run(value, { bold: true, underline: true, size: 18 }),
+        run(`${label} `, { bold: true, size: 20 }),
+        run(value, { bold: true, underline: true, size: 20 }),
       ],
     })],
   });
@@ -185,7 +185,7 @@ function buildScheduleTable(state: DwsState) {
         width: dxa(TIME_COL),
         borders: allLines,
         verticalAlign: VerticalAlign.CENTER,
-        children: [para(slotLabel(slot), { align: AlignmentType.CENTER, size: 16 })],
+        children: [para(slotLabel(slot).replaceAll(" ", "\u00A0"), { align: AlignmentType.CENTER, size: 18 })],
       }),
     ];
 
@@ -204,7 +204,7 @@ function buildScheduleTable(state: DwsState) {
             borders: allLines,
             verticalAlign: VerticalAlign.CENTER,
             shading: { type: ShadingType.CLEAR, color: "auto", fill: meta.fill.replace("#", "") },
-            children: lines.map((line) => para(line, { align: AlignmentType.CENTER, size: 16, bold: view.res.category === "regular" || view.res.category === "overload", color })),
+            children: lines.map((line) => para(line, { align: AlignmentType.CENTER, size: 18, bold: view.res.category === "regular" || view.res.category === "overload", color })),
           }),
         );
       } else {
@@ -355,7 +355,7 @@ export function buildDocument(state: DwsState, images: DocxImages): Document {
   return new Document({
     creator: "DWS Maker",
     title: "Declaration of Work Schedule",
-    styles: { default: { document: { run: { font: FONT, size: 18 } } } },
+    styles: { default: { document: { run: { font: FONT, size: 20 } } } },
     sections: [
       {
         properties: {
