@@ -290,19 +290,21 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
     if (!source) return id;
     const partHours = Math.max(0.5, source.hours / 2);
     const copyId = newId();
+    const groupId = source.groupId || newId();
     setState((current) => {
       const original = current.subjects.find((subject) => subject.id === id);
       if (!original) return current;
       const duplicate: Subject = {
         ...original,
         id: copyId,
+        groupId,
         hours: partHours,
         room: "",
       };
       return {
         ...current,
         subjects: current.subjects.map((subject) =>
-          subject.id === id ? { ...subject, hours: original.hours - partHours } : subject,
+          subject.id === id ? { ...subject, groupId, hours: original.hours - partHours } : subject,
         ).concat(duplicate),
       };
     });

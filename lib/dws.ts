@@ -63,6 +63,7 @@ export type Component = "lec" | "lab";
 
 export interface Subject {
   id: string;
+  groupId?: string;
   code: string;
   section: string;
   hours: number;
@@ -407,6 +408,7 @@ export function sanitizeState(raw: unknown): DwsState | null {
         return [
           {
             id: s.id,
+            groupId: typeof s.groupId === "string" && s.groupId ? s.groupId : undefined,
             code: text(s.code, ""),
             section: text(s.section, ""),
             hours,

@@ -95,6 +95,7 @@ function SubjectRow({
   placed,
   selected,
   editing,
+  partNumber,
   effectivityDate,
   onSelect,
   onToggleEdit,
@@ -106,6 +107,7 @@ function SubjectRow({
   placed: number;
   selected: boolean;
   editing: boolean;
+  partNumber?: number;
   effectivityDate: string;
   onSelect: () => void;
   onToggleEdit: () => void;
@@ -129,7 +131,7 @@ function SubjectRow({
               {subject.section && <span className="font-normal text-gray-500"> · {subject.section}</span>}
             </span>
             <span className="block truncate text-[11px] text-gray-500">
-              {[subject.component.toUpperCase(), subject.room].filter(Boolean).join(" · ")}
+              {partNumber ? `Part ${partNumber} · ` : ""}{[subject.component.toUpperCase(), subject.room].filter(Boolean).join(" · ")}
             </span>
             <span className={cn("block text-xs", over ? "text-amber-700" : complete ? "text-green-700" : "text-gray-500")}>
               {complete ? (
@@ -268,6 +270,11 @@ export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubj
   const byCategory = hoursByCategory(cells, subjects);
   const load = subjects.reduce((sum, s) => sum + s.hours, 0);
   const placedTotal = subjects.reduce((sum, s) => sum + (placed[s.id] ?? 0), 0);
+  const groups = subjects.reduce<Map<string, Subject[]>>((result, subject) => {
+    const key = subject.groupId || subject.id;
+    result.set(key, [...(result.get(key) ?? []), subject]);
+    return result;
+  }, new Map());
 
   return (
     <div>
@@ -311,28 +318,56 @@ export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubj
             Add each subject and section you teach, with its hours per week.
           </p>
         ) : (
-          <ul className="mb-3 space-y-2">
-            {subjects.map((subject) => (
-              <SubjectRow
-                key={subject.id}
-                subject={subject}
-                placed={placed[subject.id] ?? 0}
-                selected={brush === subjectBrush(subject.id)}
-                editing={editingId === subject.id}
-                effectivityDate={profile.effectivityDate}
-                onSelect={() => onBrush(subjectBrush(subject.id))}
-                onToggleEdit={() => setEditingId(editingId === subject.id ? null : subject.id)}
-                onSplit={() => {
-                  const id = onSplitSubject(subject.id);
-                  setEditingId(id);
-                }}
-                onUpdate={(patch) => onUpdateSubject(subject.id, patch)}
-                onRemove={() => {
-                  onRemoveSubject(subject.id);
-                  setEditingId(null);
-                }}
-              />
-            ))}
+          <ul className="mb-3 space-y-3">
+            {[...groups.values()].map((members) => {
+              const split = members.length > 1;
+              const leader = members[0];
+              const assigned = members.reduce((sum, member) => sum + member.hours, 0);
+              const completed = members.reduce((sum, member) => sum + (placed[member.id] ?? 0), 0);
+              return (
+                <li key={leader.groupId || leader.id} className={cn(split && "rounded-xl border border-blue-200 bg-blue-50/40 p-2.5")}>
+                  {split && (
+                    <div className="mb-2 px-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="truncate text-xs font-bold uppercase tracking-wide text-blue-900">
+                          {leader.code || "Subject"}{leader.section ? ` · ${leader.section}` : ""}
+                        </p>
+                        <span className="shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                          {members.length} parts
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-[11px] text-blue-700">
+                        One subject · {fmtHours(completed)} of {fmtHours(assigned)} h placed
+                      </p>
+                    </div>
+                  )}
+                  <ul className={cn(split && "space-y-2")}>
+                    {members.map((subject, index) => (
+                      <SubjectRow
+                        key={subject.id}
+                        subject={subject}
+                        partNumber={split ? index + 1 : undefined}
+                        placed={placed[subject.id] ?? 0}
+                        selected={brush === subjectBrush(subject.id)}
+                        editing={editingId === subject.id}
+                        effectivityDate={profile.effectivityDate}
+                        onSelect={() => onBrush(subjectBrush(subject.id))}
+                        onToggleEdit={() => setEditingId(editingId === subject.id ? null : subject.id)}
+                        onSplit={() => {
+                          const id = onSplitSubject(subject.id);
+                          setEditingId(id);
+                        }}
+                        onUpdate={(patch) => onUpdateSubject(subject.id, patch)}
+                        onRemove={() => {
+                          onRemoveSubject(subject.id);
+                          setEditingId(null);
+                        }}
+                      />
+                    ))}
+                  </ul>
+                </li>
+              );
+            })}
           </ul>
         )}
         <Button
