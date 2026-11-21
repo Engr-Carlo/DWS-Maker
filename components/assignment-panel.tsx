@@ -215,7 +215,7 @@ export function AssignmentPreviewPanel({ state, busy, onDownload }: { state: Dws
   return (
     <div className="mx-auto max-w-[1100px] space-y-5 p-4 sm:p-6">
       <div className="flex justify-end">
-        <div className="inline-flex w-full rounded-lg border border-slate-200 bg-white p-1 shadow-sm lg:w-auto">
+        <div className="inline-flex w-full max-w-52 rounded-lg border border-slate-200 bg-white p-0.5 shadow-sm">
           {(["regular", "overload"] as const).map((option) => (
             <button
               key={option}
@@ -223,7 +223,7 @@ export function AssignmentPreviewPanel({ state, busy, onDownload }: { state: Dws
               aria-pressed={kind === option}
               onClick={() => setKind(option)}
               className={cn(
-                "flex h-9 flex-1 items-center justify-center rounded-md px-5 text-sm font-semibold capitalize transition-all duration-200 lg:min-w-32 lg:flex-none",
+                "flex h-8 min-w-0 flex-1 items-center justify-center rounded-md px-2 text-xs font-semibold capitalize transition-all duration-200",
                 kind === option
                   ? "bg-slate-900 text-white shadow-sm"
                   : "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
