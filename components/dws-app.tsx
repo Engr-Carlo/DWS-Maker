@@ -460,12 +460,6 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
           </div>
         </header>
 
-        {!approved && (
-          <div className="border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-center text-sm text-amber-800">
-            Your account is verified. You can edit and preview everything, but an administrator must approve your account before printing or downloading.
-          </div>
-        )}
-
         {approvalNotice && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 px-4 backdrop-blur-sm"

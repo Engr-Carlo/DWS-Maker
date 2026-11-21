@@ -65,7 +65,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full bg-white text-gray-900">
         {children}
-        <p className="pointer-events-none fixed bottom-2 right-3 z-[70] text-[10px] font-medium tracking-wide text-gray-500/30 print:hidden">
+        <p className="pointer-events-none fixed bottom-2 right-3 z-[70] text-[11px] font-medium tracking-wide text-gray-500/30 print:hidden">
           Developed by Engr. Carlo
         </p>
       </body>
