@@ -52,12 +52,22 @@ const dxa = (size: number) => ({ size, type: WidthType.DXA });
 interface RunOptions {
   bold?: boolean;
   italics?: boolean;
+  underline?: boolean;
   size?: number;
   color?: string;
+  font?: string;
 }
 
 function run(text: string, o: RunOptions = {}) {
-  return new TextRun({ text, font: FONT, size: o.size ?? 18, bold: o.bold, italics: o.italics, color: o.color });
+  return new TextRun({
+    text,
+    font: o.font ?? FONT,
+    size: o.size ?? 18,
+    bold: o.bold,
+    italics: o.italics,
+    underline: o.underline ? {} : undefined,
+    color: o.color,
+  });
 }
 
 interface ParaOptions extends RunOptions {
@@ -78,7 +88,13 @@ function labelled(label: string, value: string, width: number) {
   return new TableCell({
     width: dxa(width),
     borders: noBorders,
-    children: [new Paragraph({ spacing: { before: 40, after: 40 }, children: [run(`${label} `, { bold: true, size: 19 }), run(value, { size: 19 })] })],
+    children: [new Paragraph({
+      spacing: { before: 40, after: 40 },
+      children: [
+        run(`${label} `, { bold: true, size: 19 }),
+        run(value, { bold: true, underline: true, size: 19 }),
+      ],
+    })],
   });
 }
 
@@ -88,12 +104,12 @@ function buildHeader(images: DocxImages) {
     borders: noBorders,
     verticalAlign: VerticalAlign.CENTER,
     children: [
-      para("Republic of the Philippines", { align: AlignmentType.CENTER, size: 20 }),
-      para("Pamantasan ng Cabuyao", { align: AlignmentType.CENTER, size: 32, bold: true }),
-      para("(University of Cabuyao)", { align: AlignmentType.CENTER, size: 18 }),
-      para("Administration and Finance Division", { align: AlignmentType.CENTER, size: 20, bold: true }),
-      para("Human Resource Management Department", { align: AlignmentType.CENTER, size: 20 }),
-      para("Katapatan Mutual Homes, Brgy. Banay-banay, City of Cabuyao, Laguna 4025", { align: AlignmentType.CENTER, size: 16 }),
+      para("Republic of the Philippines", { align: AlignmentType.CENTER, size: 20, color: "666666" }),
+      para("Pamantasan ng Cabuyao", { align: AlignmentType.CENTER, size: 36, bold: true, color: "0B4D2B", font: "Old English Text MT" }),
+      para("(University of Cabuyao)", { align: AlignmentType.CENTER, size: 18, color: "666666" }),
+      para("Administration and Finance Division", { align: AlignmentType.CENTER, size: 20, bold: true, color: "666666" }),
+      para("Human Resource Management Department", { align: AlignmentType.CENTER, size: 20, italics: true, color: "666666" }),
+      para("Katapatan Mutual Homes, Brgy. Banay-banay, City of Cabuyao, Laguna 4025", { align: AlignmentType.CENTER, size: 16, italics: true, color: "666666" }),
     ],
   });
 

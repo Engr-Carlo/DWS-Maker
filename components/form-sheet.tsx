@@ -20,6 +20,8 @@ import {
 
 export const PAGE_WIDTH = 816;
 const BORDER = "1px solid #000";
+const LETTERHEAD_GREEN = "#0B4D2B";
+const LETTERHEAD_GRAY = "#666666";
 
 const cellBase: CSSProperties = { border: BORDER, padding: "0 3px", textAlign: "center", verticalAlign: "middle" };
 
@@ -59,12 +61,14 @@ export function FormSheet({ state }: { state: DwsState }) {
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <Image src="/form/seal.png" alt="" width={152} height={193} unoptimized loading="eager" style={{ width: 70, height: "auto" }} />
         <div style={{ flex: 1, textAlign: "center" }}>
-          <div style={{ fontSize: 11 }}>Republic of the Philippines</div>
-          <div style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.15 }}>Pamantasan ng Cabuyao</div>
-          <div style={{ fontSize: 10 }}>(University of Cabuyao)</div>
-          <div style={{ fontSize: 11, fontWeight: 700 }}>Administration and Finance Division</div>
-          <div style={{ fontSize: 11 }}>Human Resource Management Department</div>
-          <div style={{ fontSize: 9 }}>Katapatan Mutual Homes, Brgy. Banay-banay, City of Cabuyao, Laguna 4025</div>
+          <div style={{ fontSize: 11, color: LETTERHEAD_GRAY }}>Republic of the Philippines</div>
+          <div style={{ fontFamily: 'var(--font-blackletter), "Old English Text MT", serif', fontSize: 25, fontWeight: 700, lineHeight: 1.05, color: LETTERHEAD_GREEN }}>
+            Pamantasan ng Cabuyao
+          </div>
+          <div style={{ fontSize: 10, color: LETTERHEAD_GRAY }}>(University of Cabuyao)</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: LETTERHEAD_GRAY }}>Administration and Finance Division</div>
+          <div style={{ fontSize: 11, fontStyle: "italic", color: LETTERHEAD_GRAY }}>Human Resource Management Department</div>
+          <div style={{ fontSize: 9, fontStyle: "italic", color: LETTERHEAD_GRAY }}>Katapatan Mutual Homes, Brgy. Banay-banay, City of Cabuyao, Laguna 4025</div>
         </div>
         <div style={{ width: 70, alignSelf: "flex-start", textAlign: "right", fontSize: 8, lineHeight: 1.3 }}>
           PNC:AF-FO-96
@@ -82,16 +86,16 @@ export function FormSheet({ state }: { state: DwsState }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "1.35fr 1fr", rowGap: 3, columnGap: 12, marginTop: 10, fontSize: 11 }}>
         <div>
-          <b>NAME:</b> {profile.name}
+          <b>NAME:</b> <u><b>{profile.name}</b></u>
         </div>
         <div>
-          <b>DEPT/OFFICE:</b> {profile.department}
+          <b>DEPT/OFFICE:</b> <u><b>{profile.department}</b></u>
         </div>
         <div>
-          <b>POSITION TITLE:</b> {profile.position}
+          <b>POSITION TITLE:</b> <u><b>{profile.position}</b></u>
         </div>
         <div>
-          <b>DESIGNATION:</b> {profile.designation}
+          <b>DESIGNATION:</b> <u><b>{profile.designation}</b></u>
         </div>
       </div>
 
