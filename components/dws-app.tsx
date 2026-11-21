@@ -303,9 +303,11 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
       };
       return {
         ...current,
-        subjects: current.subjects.map((subject) =>
-          subject.id === id ? { ...subject, groupId, hours: original.hours - partHours } : subject,
-        ).concat(duplicate),
+        subjects: current.subjects.flatMap((subject) =>
+          subject.id === id
+            ? [{ ...subject, groupId, hours: original.hours - partHours }, duplicate]
+            : [subject],
+        ),
       };
     });
     setBrush(subjectBrush(copyId));
