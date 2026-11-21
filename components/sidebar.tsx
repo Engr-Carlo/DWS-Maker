@@ -35,10 +35,10 @@ interface SidebarProps {
   onScheduleDetails: (patch: Partial<ScheduleDetails>) => void;
 }
 
-function Section({ step, title, hint, children, open = true }: { step: number; title: string; hint: string; children: ReactNode; open?: boolean }) {
+function Section({ step, title, hint, children, open = false, onToggle }: { step: number; title: string; hint: string; children: ReactNode; open?: boolean; onToggle: () => void }) {
   return (
-    <details open={open} className="group border-b border-gray-200">
-      <summary className="flex list-none items-center gap-3 px-5 py-4 select-none [&::-webkit-details-marker]:hidden">
+    <section className="border-b border-gray-200">
+      <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full items-center gap-3 px-5 py-4 text-left select-none">
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-semibold text-white">
           {step}
         </span>
@@ -46,10 +46,10 @@ function Section({ step, title, hint, children, open = true }: { step: number; t
           <span className="block text-sm font-semibold text-gray-900">{title}</span>
           <span className="block truncate text-xs text-gray-500">{hint}</span>
         </span>
-        <ChevronDown className="h-4 w-4 shrink-0 text-gray-400 transition-transform group-open:rotate-180" />
-      </summary>
-      <div className="px-5 pb-5">{children}</div>
-    </details>
+        <ChevronDown className={cn("h-4 w-4 shrink-0 text-gray-400 transition-transform", open && "rotate-180")} />
+      </button>
+      {open && <div className="px-5 pb-5">{children}</div>}
+    </section>
   );
 }
 
@@ -270,6 +270,7 @@ function SubjectRow({
 
 export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubject, onSplitSubject, onUpdateSubject, onRemoveSubject, onActivityHours, onScheduleDetails }: SidebarProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [openSection, setOpenSection] = useState<number>(1);
   const { profile, signoff, subjects, cells } = state;
   const placed = hoursBySubject(cells);
   const byCategory = hoursByCategory(cells, subjects);
@@ -283,7 +284,7 @@ export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubj
 
   return (
     <div>
-      <Section step={1} title="Your details" hint="Appears at the top of the form">
+      <Section step={1} title="Your details" hint="Appears at the top of the form" open={openSection === 1} onToggle={() => setOpenSection(openSection === 1 ? 0 : 1)}>
         <div className="space-y-3">
           <Field label="Full name">
             <input className={inputClass} value={profile.name} placeholder="e.g. JUAN D. DELA CRUZ" onChange={(e) => onProfile({ name: e.target.value })} />
@@ -317,7 +318,7 @@ export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubj
         </div>
       </Section>
 
-      <Section step={2} title="Subjects" hint="Pick one, then fill the grid">
+      <Section step={2} title="Subjects" hint="Pick one, then fill the grid" open={openSection === 2} onToggle={() => setOpenSection(openSection === 2 ? 0 : 2)}>
         <div className="mb-3 rounded-lg border border-slate-200 bg-slate-50 p-2.5">
           <p className="text-xs font-semibold text-slate-800">Show inside scheduled blocks</p>
           <p className="mt-0.5 text-[11px] text-slate-500">Choose the subject details users see in the DWS.</p>
@@ -421,7 +422,7 @@ export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubj
         )}
       </Section>
 
-      <Section step={3} title="Other activities" hint="Research, consultation, breaks and more">
+      <Section step={3} title="Other activities" hint="Research, consultation, breaks and more" open={openSection === 3} onToggle={() => setOpenSection(openSection === 3 ? 0 : 3)}>
         <div className="grid grid-cols-2 gap-2">
           {ACTIVITY_IDS.map((id) => {
             const meta = CATEGORY_BY_ID[id];
@@ -471,7 +472,7 @@ export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubj
         </div>
       </Section>
 
-      <Section step={4} title="Sign-off" hint="Endorser and approver on the form" open={false}>
+      <Section step={4} title="Sign-off" hint="Endorser and approver on the form" open={openSection === 4} onToggle={() => setOpenSection(openSection === 4 ? 0 : 4)}>
         <div className="space-y-3">
           <Field label="Endorsed by">
             <input className={inputClass} value={signoff.endorserName} placeholder="Name" onChange={(e) => onSignoff({ endorserName: e.target.value })} />

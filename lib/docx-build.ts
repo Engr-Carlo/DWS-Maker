@@ -204,7 +204,7 @@ function buildScheduleTable(state: DwsState) {
             borders: allLines,
             verticalAlign: VerticalAlign.CENTER,
             shading: { type: ShadingType.CLEAR, color: "auto", fill: meta.fill.replace("#", "") },
-            children: lines.map((line) => para(line, { align: AlignmentType.CENTER, size: 18, bold: view.res.category === "regular" || view.res.category === "overload", color })),
+            children: lines.map((line) => para(line, { align: AlignmentType.CENTER, size: 18, bold: true, color })),
           }),
         );
       } else {
