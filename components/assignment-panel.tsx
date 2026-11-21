@@ -44,7 +44,7 @@ function Card({ title, hint, children, className }: { title: string; hint?: stri
   );
 }
 
-function LoadCard({ state, kind, busy, canDownload, onDownload }: { state: DwsState; kind: SubjectKind; busy: boolean; canDownload: boolean; onDownload: (kinds: SubjectKind[]) => void }) {
+function LoadCard({ state, kind, busy, onDownload }: { state: DwsState; kind: SubjectKind; busy: boolean; onDownload: (kinds: SubjectKind[]) => void }) {
   const model = useMemo(() => buildAssignment(state, kind), [state, kind]);
   const total = state.subjects.filter((s) => s.kind === kind).length;
   const regular = kind === "regular";
@@ -117,7 +117,7 @@ function LoadCard({ state, kind, busy, canDownload, onDownload }: { state: DwsSt
 
         <div className="mt-4 flex items-center justify-between gap-3 border-t border-gray-200 pt-3">
           <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-gray-500">Generated docx</span>
-          <Button size="sm" variant="secondary" disabled={busy || !canDownload || model.rows.length === 0} title={canDownload ? undefined : "Awaiting admin approval"} onClick={() => onDownload([kind])}>
+          <Button size="sm" variant="secondary" disabled={busy || model.rows.length === 0} onClick={() => onDownload([kind])}>
             <Download className="h-3.5 w-3.5" /> Download
           </Button>
         </div>
@@ -211,7 +211,7 @@ export function AssignmentPanel({ state, onAssignment }: PanelProps) {
   );
 }
 
-export function AssignmentPreviewPanel({ state, busy, canDownload, onDownload }: { state: DwsState; busy: boolean; canDownload: boolean; onDownload: (kinds: SubjectKind[]) => void }) {
+export function AssignmentPreviewPanel({ state, busy, onDownload }: { state: DwsState; busy: boolean; onDownload: (kinds: SubjectKind[]) => void }) {
   return (
     <div className="mx-auto max-w-[1280px] space-y-6 p-4 sm:p-6">
       <div>
@@ -222,8 +222,8 @@ export function AssignmentPreviewPanel({ state, busy, canDownload, onDownload }:
       </div>
 
       <div className="grid gap-5 xl:grid-cols-2">
-        <LoadCard state={state} kind="regular" busy={busy} canDownload={canDownload} onDownload={onDownload} />
-        <LoadCard state={state} kind="overload" busy={busy} canDownload={canDownload} onDownload={onDownload} />
+        <LoadCard state={state} kind="regular" busy={busy} onDownload={onDownload} />
+        <LoadCard state={state} kind="overload" busy={busy} onDownload={onDownload} />
       </div>
     </div>
   );

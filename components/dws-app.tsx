@@ -152,6 +152,7 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
   const [exporting, setExporting] = useState(false);
   const [cloudReady, setCloudReady] = useState(false);
   const [syncError, setSyncError] = useState("");
+  const [approvalNotice, setApprovalNotice] = useState(false);
 
   const stateRef = useRef(state);
   const snapshot = useRef<Cells | null>(null);
@@ -344,7 +345,10 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
   };
 
   const download = async () => {
-    if (!approved) return;
+    if (!approved) {
+      setApprovalNotice(true);
+      return;
+    }
     setExporting(true);
     try {
       await exportDocx(state);
@@ -356,7 +360,10 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
   };
 
   const downloadAssignments = async (kinds: SubjectKind[]) => {
-    if (!approved) return;
+    if (!approved) {
+      setApprovalNotice(true);
+      return;
+    }
     setExporting(true);
     try {
       await exportAssignments(state, kinds);
@@ -433,11 +440,14 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
               ]}
             />
             <span className="hidden max-w-32 truncate text-xs text-gray-500 xl:block" title={userEmail}>{userEmail}</span>
-            <Button variant="secondary" onClick={() => window.print()} disabled={!approved} title={approved ? undefined : "Download access is awaiting admin approval"}>
+            <Button
+              variant="secondary"
+              onClick={() => approved ? window.print() : setApprovalNotice(true)}
+            >
               <Printer className="h-4 w-4" />
               <span className="hidden sm:inline">Print</span>
             </Button>
-            <Button variant="primary" onClick={download} disabled={exporting || !approved} title={approved ? undefined : "Download access is awaiting admin approval"}>
+            <Button variant="primary" onClick={download} disabled={exporting}>
               <Download className="h-4 w-4" />
               <span className="hidden sm:inline">{exporting ? "Preparing…" : "Download DWS"}</span>
             </Button>
@@ -453,6 +463,34 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
         {!approved && (
           <div className="border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-center text-sm text-amber-800">
             Your account is verified. You can edit and preview everything, but an administrator must approve your account before printing or downloading.
+          </div>
+        )}
+
+        {approvalNotice && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 px-4 backdrop-blur-sm"
+            role="presentation"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) setApprovalNotice(false);
+            }}
+          >
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="approval-title"
+              className="w-full max-w-md rounded-2xl border border-white/20 bg-white p-6 shadow-2xl"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+              <h2 id="approval-title" className="mt-4 text-xl font-black text-slate-950">Account awaiting approval</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Your account is not yet approved by the admin. Contact the handsome Engr. Carlo to activate your account.
+              </p>
+              <Button variant="primary" className="mt-5 w-full" onClick={() => setApprovalNotice(false)}>
+                Got it
+              </Button>
+            </section>
           </div>
         )}
 
@@ -476,7 +514,7 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
             ) : view === "assignment" ? (
               <AssignmentPanel state={state} onAssignment={updateAssignment} />
             ) : view === "assignment-preview" ? (
-              <AssignmentPreviewPanel state={state} busy={exporting} canDownload={approved} onDownload={downloadAssignments} />
+              <AssignmentPreviewPanel state={state} busy={exporting} onDownload={downloadAssignments} />
             ) : (
               <div className="mx-auto max-w-[1100px] space-y-4 p-4 sm:p-6">
                 {showGuide && (
