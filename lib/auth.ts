@@ -75,6 +75,43 @@ export async function verifyEmailCode(email: string, code: string) {
   return row.user_id;
 }
 
+export async function issuePasswordResetCode(userId: string) {
+  await ensureSchema();
+  const code = String(randomBytes(4).readUInt32BE() % 1_000_000).padStart(6, "0");
+  const expiresAt = new Date(Date.now() + VERIFY_MINUTES * 60 * 1000);
+  const sql = db();
+  await sql`DELETE FROM password_reset_tokens WHERE user_id = ${userId}`;
+  await sql`
+    INSERT INTO password_reset_tokens (token_hash, user_id, expires_at)
+    VALUES (${digestVerificationToken(code)}, ${userId}, ${expiresAt.toISOString()})
+  `;
+  return code;
+}
+
+export async function resetPassword(email: string, code: string, password: string) {
+  await ensureSchema();
+  const sql = db();
+  const rows = await sql`
+    DELETE FROM password_reset_tokens t
+    USING users u
+    WHERE t.user_id = u.id
+      AND u.email = ${email}
+      AND t.token_hash = ${digestVerificationToken(code)}
+      AND t.expires_at > NOW()
+    RETURNING t.user_id
+  `;
+  const row = rows[0] as { user_id?: string } | undefined;
+  if (!row?.user_id) return false;
+
+  await sql`
+    UPDATE users
+    SET password_hash = ${hashPassword(password)}, updated_at = NOW()
+    WHERE id = ${row.user_id}
+  `;
+  await sql`DELETE FROM sessions WHERE user_id = ${row.user_id}`;
+  return true;
+}
+
 export async function createSession(userId: string) {
   await ensureSchema();
   const token = randomBytes(32).toString("base64url");
