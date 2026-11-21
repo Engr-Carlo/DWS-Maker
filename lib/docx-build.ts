@@ -62,7 +62,7 @@ function run(text: string, o: RunOptions = {}) {
   return new TextRun({
     text,
     font: o.font ?? FONT,
-    size: o.size ?? 18,
+    size: o.size ?? 20,
     bold: o.bold,
     italics: o.italics,
     underline: o.underline ? {} : undefined,
@@ -91,8 +91,8 @@ function labelled(label: string, value: string, width: number) {
     children: [new Paragraph({
       spacing: { before: 40, after: 40 },
       children: [
-        run(`${label} `, { bold: true, size: 19 }),
-        run(value, { bold: true, underline: true, size: 19 }),
+        run(`${label} `, { bold: true, size: 20 }),
+        run(value, { bold: true, underline: true, size: 20 }),
       ],
     })],
   });
@@ -162,7 +162,7 @@ function buildFooter(images: DocxImages) {
 }
 
 function buildScheduleTable(state: DwsState) {
-  const grid = buildGrid(state.cells, state.subjects);
+  const grid = buildGrid(state.cells, state.subjects, state.scheduleDetails);
   const headerCell = (text: string, width: number) =>
     new TableCell({
       width: dxa(width),
@@ -185,7 +185,7 @@ function buildScheduleTable(state: DwsState) {
         width: dxa(TIME_COL),
         borders: allLines,
         verticalAlign: VerticalAlign.CENTER,
-        children: [para(slotLabel(slot), { align: AlignmentType.CENTER, size: 14 })],
+        children: [para(slotLabel(slot), { align: AlignmentType.CENTER, size: 18 })],
       }),
     ];
 
@@ -204,7 +204,7 @@ function buildScheduleTable(state: DwsState) {
             borders: allLines,
             verticalAlign: VerticalAlign.CENTER,
             shading: { type: ShadingType.CLEAR, color: "auto", fill: meta.fill.replace("#", "") },
-            children: lines.map((line) => para(line, { align: AlignmentType.CENTER, size: 16, color })),
+            children: lines.map((line) => para(line, { align: AlignmentType.CENTER, size: 18, bold: view.res.category === "regular" || view.res.category === "overload", color })),
           }),
         );
       } else {
@@ -355,7 +355,7 @@ export function buildDocument(state: DwsState, images: DocxImages): Document {
   return new Document({
     creator: "DWS Maker",
     title: "Declaration of Work Schedule",
-    styles: { default: { document: { run: { font: FONT, size: 18 } } } },
+    styles: { default: { document: { run: { font: FONT, size: 20 } } } },
     sections: [
       {
         properties: {

@@ -38,7 +38,7 @@ function SignBlock({ heading, name, title }: { heading: string; name: string; ti
 
 export function FormSheet({ state }: { state: DwsState }) {
   const { profile, signoff, subjects, cells, includeBreak } = state;
-  const grid = useMemo(() => buildGrid(cells, subjects), [cells, subjects]);
+  const grid = useMemo(() => buildGrid(cells, subjects, state.scheduleDetails), [cells, subjects, state.scheduleDetails]);
   const byCategory = useMemo(() => hoursByCategory(cells, subjects), [cells, subjects]);
   const total = totalHours(byCategory, includeBreak);
 
@@ -119,7 +119,7 @@ export function FormSheet({ state }: { state: DwsState }) {
         <tbody>
           {Array.from({ length: SLOT_COUNT }, (_, slot) => (
             <tr key={slot} style={{ height: 22 }}>
-              <td style={{ ...cellBase, fontSize: 8, whiteSpace: "nowrap" }}>{slotLabel(slot)}</td>
+              <td style={{ ...cellBase, fontSize: 9, whiteSpace: "nowrap" }}>{slotLabel(slot)}</td>
               {DAY_NAMES.map((day, d) => {
                 const view = grid[slot][d];
                 if (view && !view.start) return null;
@@ -129,7 +129,7 @@ export function FormSheet({ state }: { state: DwsState }) {
                   <td
                     key={day}
                     rowSpan={view.length}
-                    style={{ ...cellBase, background: meta.fill, color: meta.formInk, fontSize: 9, lineHeight: 1.2 }}
+                    style={{ ...cellBase, background: meta.fill, color: meta.formInk, fontSize: 9, fontWeight: 700, lineHeight: 1.2 }}
                   >
                     {view.length === 1 ? (
                       [view.res.title, view.res.subtitle].filter(Boolean).join(" ")

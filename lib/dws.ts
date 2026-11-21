@@ -59,6 +59,19 @@ export const CATEGORY_BY_ID = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]
 export type ActivityId = "research" | "extension" | "consultation" | "quasi" | "admin" | "break";
 export const ACTIVITY_IDS: ActivityId[] = ["research", "extension", "consultation", "quasi", "admin", "break"];
 export type ActivityHours = Record<ActivityId, number>;
+export interface ScheduleDetails {
+  code: boolean;
+  section: boolean;
+  component: boolean;
+  room: boolean;
+}
+
+export const defaultScheduleDetails = (): ScheduleDetails => ({
+  code: true,
+  section: true,
+  component: true,
+  room: true,
+});
 
 export const emptyActivityHours = (): ActivityHours => ({
   research: 0,
@@ -130,6 +143,7 @@ export interface DwsState {
   subjects: Subject[];
   cells: Cells;
   activityHours: ActivityHours;
+  scheduleDetails: ScheduleDetails;
   includeBreak: boolean;
 }
 
@@ -191,6 +205,21 @@ export function resolveBrush(brush: string, subjects: Subject[]): Resolved | nul
   return null;
 }
 
+function subjectGridResolved(subject: Subject, details: ScheduleDetails): Resolved {
+  const parts = [
+    details.code ? subject.code.trim() || "Subject" : "",
+    details.section ? subject.section.trim() : "",
+    details.component ? subject.component.toUpperCase() : "",
+    details.room ? subject.room.trim() : "",
+  ].filter(Boolean);
+  const [title = "Subject", ...rest] = parts;
+  return {
+    category: subject.kind,
+    title,
+    subtitle: rest.join(" · "),
+  };
+}
+
 export interface CellView {
   brush: string;
   res: Resolved;
@@ -200,13 +229,16 @@ export interface CellView {
 }
 
 /** Indexed [slot][day]; consecutive slots with the same brush form one block. */
-export function buildGrid(cells: Cells, subjects: Subject[]): (CellView | null)[][] {
+export function buildGrid(cells: Cells, subjects: Subject[], details: ScheduleDetails = defaultScheduleDetails()): (CellView | null)[][] {
   const grid: (CellView | null)[][] = Array.from({ length: SLOT_COUNT }, () => Array<CellView | null>(DAYS.length).fill(null));
   for (let day = 0; day < DAYS.length; day++) {
     let slot = 0;
     while (slot < SLOT_COUNT) {
       const brush = cells[cellKey(day, slot)];
-      const res = brush ? resolveBrush(brush, subjects) : null;
+      const subject = brush?.startsWith("subject:")
+        ? subjects.find((item) => item.id === brush.slice("subject:".length))
+        : null;
+      const res = subject ? subjectGridResolved(subject, details) : brush ? resolveBrush(brush, subjects) : null;
       if (!brush || !res) {
         slot++;
         continue;
@@ -343,6 +375,7 @@ export function defaultState(): DwsState {
     subjects: [],
     cells: {},
     activityHours: emptyActivityHours(),
+    scheduleDetails: defaultScheduleDetails(),
     includeBreak: false,
   };
 }
@@ -415,6 +448,7 @@ export function exampleState(): DwsState {
     subjects,
     cells,
     activityHours: { research: 3, extension: 3, consultation: 4, quasi: 6, admin: 0, break: 5 },
+    scheduleDetails: defaultScheduleDetails(),
     includeBreak: false,
   };
 }
@@ -435,6 +469,7 @@ export function sanitizeState(raw: unknown): DwsState | null {
   const a = (r.assignment && typeof r.assignment === "object" ? r.assignment : {}) as Record<string, unknown>;
   const baseA = base.assignment;
   const rawActivityHours = (r.activityHours && typeof r.activityHours === "object" ? r.activityHours : {}) as Record<string, unknown>;
+  const rawScheduleDetails = (r.scheduleDetails && typeof r.scheduleDetails === "object" ? r.scheduleDetails : {}) as Record<string, unknown>;
 
   const subjects: Subject[] = Array.isArray(r.subjects)
     ? r.subjects.flatMap((item) => {
@@ -479,6 +514,10 @@ export function sanitizeState(raw: unknown): DwsState | null {
       activityHours[id] = Object.values(cells).filter((value) => value === brush).length * 0.5;
     }
   }
+  const scheduleDetails = defaultScheduleDetails();
+  for (const key of Object.keys(scheduleDetails) as (keyof ScheduleDetails)[]) {
+    if (typeof rawScheduleDetails[key] === "boolean") scheduleDetails[key] = rawScheduleDetails[key] as boolean;
+  }
 
   return {
     profile: {
@@ -514,6 +553,7 @@ export function sanitizeState(raw: unknown): DwsState | null {
     subjects,
     cells,
     activityHours,
+    scheduleDetails,
     includeBreak: r.includeBreak === true,
   };
 }

@@ -570,6 +570,10 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
                 ...current,
                 activityHours: { ...current.activityHours, [id]: hours },
               }))}
+              onScheduleDetails={(patch) => setState((current) => ({
+                ...current,
+                scheduleDetails: { ...current.scheduleDetails, ...patch },
+              }))}
             />
           </aside>
 
@@ -658,6 +662,7 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
                   cells={cells}
                   subjects={subjects}
                   brush={brush}
+                  details={state.scheduleDetails}
                   onStrokeStart={handleStrokeStart}
                   onPaint={handlePaint}
                   onStrokeEnd={handleStrokeEnd}

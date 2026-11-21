@@ -19,6 +19,7 @@ const DAY_ABBR = ["M", "T", "W", "Th", "F", "S"];
 
 export interface LoadRow {
   subject: Subject;
+  room: string;
   days: number[];
   startSlot: number;
   endSlot: number;
@@ -136,6 +137,7 @@ export function buildAssignment(state: DwsState, kind: SubjectKind): AssignmentM
       const hours = (group.days.length * (group.end - group.start)) / 2;
       rows.push({
         subject,
+        room: subject.room,
         days: group.days,
         startSlot: group.start,
         endSlot: group.end,
@@ -145,13 +147,40 @@ export function buildAssignment(state: DwsState, kind: SubjectKind): AssignmentM
     }
   }
 
+  const combinedRows = new Map<string, LoadRow>();
+  for (const row of rows) {
+    const key = JSON.stringify([
+      row.subject.code.trim().toUpperCase(),
+      row.subject.section.trim().toUpperCase(),
+      row.subject.title.trim(),
+      row.subject.component,
+      row.subject.startDate,
+      row.days,
+      row.startSlot,
+      row.endSlot,
+    ]);
+    const existing = combinedRows.get(key);
+    if (!existing) {
+      combinedRows.set(key, row);
+      continue;
+    }
+    const rooms = [existing.room, row.room]
+      .flatMap((room) => room.split(" / "))
+      .map((room) => room.trim())
+      .filter(Boolean);
+    existing.room = [...new Set(rooms)].join(" / ");
+    existing.hours += row.hours;
+    existing.units += row.units;
+  }
+  const finalRows = [...combinedRows.values()];
+
   return {
     kind,
-    rows,
+    rows: finalRows,
     unplaced,
     consultations: consultationRows(state),
-    totalHours: rows.reduce((sum, r) => sum + r.hours, 0),
-    totalUnits: rows.reduce((sum, r) => sum + r.units, 0),
+    totalHours: finalRows.reduce((sum, r) => sum + r.hours, 0),
+    totalUnits: finalRows.reduce((sum, r) => sum + r.units, 0),
     lecCount: lecClasses.size,
     labCount: labClasses.size,
   };

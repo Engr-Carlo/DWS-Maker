@@ -15,6 +15,7 @@ import {
   slotStart,
   type Cells,
   type CellView,
+  type DwsState,
   type Subject,
 } from "@/lib/dws";
 
@@ -22,6 +23,7 @@ interface ScheduleGridProps {
   cells: Cells;
   subjects: Subject[];
   brush: string;
+  details: DwsState["scheduleDetails"];
   onStrokeStart: () => void;
   onPaint: (keys: string[], brush: string, erase: boolean) => void;
   onStrokeEnd: () => void;
@@ -70,8 +72,8 @@ function Block({ view }: { view: CellView }) {
   );
 }
 
-export function ScheduleGrid({ cells, subjects, brush, onStrokeStart, onPaint, onStrokeEnd }: ScheduleGridProps) {
-  const grid = useMemo(() => buildGrid(cells, subjects), [cells, subjects]);
+export function ScheduleGrid({ cells, subjects, brush, details, onStrokeStart, onPaint, onStrokeEnd }: ScheduleGridProps) {
+  const grid = useMemo(() => buildGrid(cells, subjects, details), [cells, subjects, details]);
   const stroke = useRef<Stroke | null>(null);
 
   useEffect(() => {

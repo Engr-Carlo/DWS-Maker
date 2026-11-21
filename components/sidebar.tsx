@@ -17,6 +17,7 @@ import {
   type Profile,
   type Signoff,
   type Subject,
+  type ScheduleDetails,
 } from "@/lib/dws";
 import { Button, Field, inputClass } from "./ui";
 
@@ -31,6 +32,7 @@ interface SidebarProps {
   onUpdateSubject: (id: string, patch: Partial<Subject>) => void;
   onRemoveSubject: (id: string) => void;
   onActivityHours: (id: ActivityId, hours: number) => void;
+  onScheduleDetails: (patch: Partial<ScheduleDetails>) => void;
 }
 
 function Section({ step, title, hint, children, open = true }: { step: number; title: string; hint: string; children: ReactNode; open?: boolean }) {
@@ -266,7 +268,7 @@ function SubjectRow({
   );
 }
 
-export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubject, onSplitSubject, onUpdateSubject, onRemoveSubject, onActivityHours }: SidebarProps) {
+export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubject, onSplitSubject, onUpdateSubject, onRemoveSubject, onActivityHours, onScheduleDetails }: SidebarProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const { profile, signoff, subjects, cells } = state;
   const placed = hoursBySubject(cells);
@@ -316,6 +318,28 @@ export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubj
       </Section>
 
       <Section step={2} title="Subjects" hint="Pick one, then fill the grid">
+        <div className="mb-3 rounded-lg border border-slate-200 bg-slate-50 p-2.5">
+          <p className="text-xs font-semibold text-slate-800">Show inside scheduled blocks</p>
+          <p className="mt-0.5 text-[11px] text-slate-500">Choose the subject details users see in the DWS.</p>
+          <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
+            {([
+              ["code", "Course code"],
+              ["section", "Section"],
+              ["component", "LEC / LAB"],
+              ["room", "Room"],
+            ] as const).map(([key, label]) => (
+              <label key={key} className="flex cursor-pointer items-center gap-2 text-xs font-medium text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={state.scheduleDetails[key]}
+                  onChange={(event) => onScheduleDetails({ [key]: event.target.checked })}
+                  className="h-3.5 w-3.5 rounded accent-blue-600"
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+        </div>
         {subjects.length === 0 ? (
           <p className="mb-3 rounded-lg border border-dashed border-gray-300 px-3 py-4 text-center text-[13px] text-gray-500">
             Add each subject and section you teach, with its hours per week.

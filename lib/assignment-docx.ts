@@ -199,7 +199,7 @@ function classTable(state: DwsState, model: AssignmentModel) {
     dayCode(r.days),
     timeRange(r.startSlot, r.endSlot, true),
     r.subject.component === "lab" ? "Lab" : "Lec",
-    r.subject.room,
+    r.room,
     formatNumber(r.units),
     usDate(r.subject.startDate || state.profile.effectivityDate),
   ]);
