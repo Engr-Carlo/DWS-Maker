@@ -4,7 +4,8 @@ A small, free tool for making the **Declaration of Work Schedule** (form PNC:AF-
 Fill in your details, add your subjects, paint your week on a Mon–Sat grid, and download the finished form as a
 Word (.docx) file or print it on long bond paper (8.5 × 13 in).
 
-There is no account and no server-side storage. Everything stays in your browser and is saved automatically.
+Accounts are saved in Neon PostgreSQL and synchronized across devices. The current schedule is also retained in browser
+storage as a backup while cloud saves are running.
 
 ## How to use it
 
@@ -45,10 +46,26 @@ npm run dev
 
 Open <http://localhost:3000>. Other scripts: `npm run build`, `npm run lint`.
 
+## Accounts and database
+
+Users register with an email and password, verify their address, and receive a secure HTTP-only session. Each account can
+access only its own schedule. Passwords are scrypt-hashed; verification and session tokens are stored as hashes.
+
+For local development or Vercel, copy `.env.example` to `.env.local` and set:
+
+- `DATABASE_URL` – the pooled Neon PostgreSQL connection string.
+- `APP_URL` – the public app URL used in email verification links.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` – SMTP credentials.
+- `EMAIL_VERIFICATION_SECRET` – a long random secret used to HMAC verification tokens.
+
+The database tables are created automatically on first use. Never commit real environment values.
+
 ## Deploy
 
-It is a static Next.js app with no backend or database. Import the repository on [Vercel](https://vercel.com/new) and
-deploy with the default settings.
+Add the Neon integration in the Vercel project and confirm that `DATABASE_URL` is available to production. Add the SMTP,
+`APP_URL`, and `EMAIL_VERIFICATION_SECRET` variables in Vercel, then deploy normally. Gmail SMTP requires an app password.
+
+The campus background uses a public-domain photograph by Othanwiki2009 of the Pamantasan ng Cabuyao main building.
 
 ## Project layout
 
@@ -61,6 +78,9 @@ deploy with the default settings.
 | `components/assignment-panel.tsx` | Teaching assignment forms and separate preview panel |
 | `components/assignment-sheet.tsx` | On-screen and print layout of the teaching assignment memo |
 | `lib/dws.ts` | Types, hour calculations, example data, saving and loading |
+| `lib/db.ts` | Neon PostgreSQL connection and schema initialization |
+| `lib/auth.ts` | Password hashing, email verification, and secure sessions |
+| `lib/email.ts` | SMTP verification-email delivery |
 | `lib/assignment.ts` | Turns the schedule grid into class rows, consultation rows and totals |
 | `lib/docx-build.ts` | Builds the DWS Word document that matches the official form |
 | `lib/assignment-docx.ts` | Builds the teaching assignment Word documents |

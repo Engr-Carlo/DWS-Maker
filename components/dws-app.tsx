@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type ChangeEvent, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { saveAs } from "file-saver";
 import {
@@ -9,6 +10,7 @@ import {
   FileDown,
   FolderOpen,
   LayoutTemplate,
+  LogOut,
   MoreHorizontal,
   Printer,
   Redo2,
@@ -67,9 +69,9 @@ const SHORT_NAMES: Record<CategoryId, string> = {
 
 const subscribe = () => () => {};
 
-export default function DwsApp() {
+export default function DwsApp({ userEmail }: { userEmail: string }) {
   const hydrated = useSyncExternalStore(subscribe, () => true, () => false);
-  return hydrated ? <Workspace /> : <div className="min-h-screen bg-white" />;
+  return hydrated ? <Workspace userEmail={userEmail} /> : <div className="min-h-screen bg-white" />;
 }
 
 function defaultBrush(state: DwsState): string {
@@ -138,7 +140,8 @@ function FileMenu({ items }: { items: MenuItem[] }) {
   );
 }
 
-function Workspace() {
+function Workspace({ userEmail }: { userEmail: string }) {
+  const router = useRouter();
   const [state, setState] = useState<DwsState>(loadState);
   const [brush, setBrush] = useState(() => defaultBrush(state));
   const [previousBrush, setPreviousBrush] = useState(brush);
@@ -146,6 +149,8 @@ function Workspace() {
   const [past, setPast] = useState<Cells[]>([]);
   const [future, setFuture] = useState<Cells[]>([]);
   const [exporting, setExporting] = useState(false);
+  const [cloudReady, setCloudReady] = useState(false);
+  const [syncError, setSyncError] = useState("");
 
   const stateRef = useRef(state);
   const snapshot = useRef<Cells | null>(null);
@@ -155,6 +160,48 @@ function Workspace() {
     stateRef.current = state;
     saveState(state);
   }, [state]);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/schedule", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Unable to load the saved schedule.");
+        const body = await response.json() as { state?: unknown };
+        const cloudState = sanitizeState(body.state);
+        if (!active) return;
+        if (cloudState) {
+          setState(cloudState);
+          const nextBrush = defaultBrush(cloudState);
+          setBrush(nextBrush);
+          setPreviousBrush(nextBrush);
+        }
+        setSyncError("");
+        setCloudReady(true);
+      })
+      .catch(() => {
+        if (active) setSyncError("Cloud save is unavailable. Your work is still backed up in this browser.");
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!cloudReady) return;
+    const timeout = window.setTimeout(() => {
+      void fetch("/api/schedule", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ state: stateRef.current }),
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error("Unable to save");
+          setSyncError("");
+        })
+        .catch(() => setSyncError("Cloud save failed. Your latest work remains in this browser."));
+    }, 500);
+    return () => window.clearTimeout(timeout);
+  }, [state, cloudReady]);
 
   const { cells, subjects } = state;
   const byCategory = hoursByCategory(cells, subjects);
@@ -317,6 +364,12 @@ function Workspace() {
     }
   };
 
+  const signOut = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/");
+    router.refresh();
+  };
+
   const updateAssignment = (patch: Partial<Assignment>) =>
     setState((s) => ({ ...s, assignment: { ...s.assignment, ...patch } }));
 
@@ -372,8 +425,10 @@ function Workspace() {
                 { label: "Open backup file…", icon: <FolderOpen className="h-4 w-4" />, onClick: () => fileInput.current?.click() },
                 { label: "Clear schedule grid", icon: <Eraser className="h-4 w-4" />, onClick: clearSchedule, divider: true },
                 { label: "Start over", icon: <Trash2 className="h-4 w-4" />, onClick: startOver, danger: true },
+                { label: "Sign out", icon: <LogOut className="h-4 w-4" />, onClick: signOut, divider: true },
               ]}
             />
+            <span className="hidden max-w-32 truncate text-xs text-gray-500 xl:block" title={userEmail}>{userEmail}</span>
             <Button variant="secondary" onClick={() => window.print()}>
               <Printer className="h-4 w-4" />
               <span className="hidden sm:inline">Print</span>
@@ -383,6 +438,11 @@ function Workspace() {
               <span className="hidden sm:inline">{exporting ? "Preparing…" : "Download DWS"}</span>
             </Button>
             <input ref={fileInput} type="file" accept=".json,application/json" className="hidden" onChange={openBackup} />
+            {syncError && (
+              <p role="status" className="hidden max-w-44 text-xs text-amber-700 2xl:block" title={syncError}>
+                {syncError}
+              </p>
+            )}
           </div>
         </header>
 
