@@ -16,7 +16,7 @@ export function formatClock(minutes: number, pad = false): string {
 export const slotStart = (slot: number) => DAY_START_MINUTES + slot * 30;
 
 export const slotLabel = (slot: number) =>
-  `${formatClock(slotStart(slot), true)}-${formatClock(slotStart(slot) + 30, true)}`;
+  `${formatClock(slotStart(slot), true)}\u00A0-\u00A0${formatClock(slotStart(slot) + 30, true)}`;
 
 export type CategoryId =
   | "regular"

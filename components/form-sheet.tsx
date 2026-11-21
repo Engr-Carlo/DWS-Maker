@@ -101,7 +101,7 @@ export function FormSheet({ state }: { state: DwsState }) {
 
       <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed", marginTop: 8 }}>
         <colgroup>
-          <col style={{ width: 106 }} />
+          <col style={{ width: 145 }} />
           {DAY_NAMES.map((d) => (
             <col key={d} />
           ))}
@@ -119,7 +119,7 @@ export function FormSheet({ state }: { state: DwsState }) {
         <tbody>
           {Array.from({ length: SLOT_COUNT }, (_, slot) => (
             <tr key={slot} style={{ height: 22 }}>
-              <td style={{ ...cellBase, fontSize: 9, whiteSpace: "nowrap" }}>{slotLabel(slot)}</td>
+              <td style={{ ...cellBase, fontSize: 8, whiteSpace: "nowrap", padding: "0 1px" }}>{slotLabel(slot)}</td>
               {DAY_NAMES.map((day, d) => {
                 const view = grid[slot][d];
                 if (view && !view.start) return null;

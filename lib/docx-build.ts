@@ -38,8 +38,8 @@ export interface DocxImages {
 
 const FONT = "Arial";
 const CONTENT_WIDTH = 9990;
-const TIME_COL = 1650;
-const DAY_COL = 1390;
+const TIME_COL = 2200;
+const DAY_COL = 1298;
 
 const NONE = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
 const LINE = { style: BorderStyle.SINGLE, size: 4, color: "000000" };
