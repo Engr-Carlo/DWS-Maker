@@ -1,10 +1,5 @@
-import { Suspense } from "react";
-import { VerifyClient } from "@/components/verify-client";
+import { redirect } from "next/navigation";
 
 export default function VerifyPage() {
-  return (
-    <Suspense fallback={<main className="min-h-screen bg-slate-950" />}>
-      <VerifyClient />
-    </Suspense>
-  );
+  redirect("/login");
 }

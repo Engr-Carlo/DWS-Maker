@@ -1,7 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 
 function databaseUrl() {
-  const value = process.env.DATABASE_URL;
+  const value = process.env.DATABASE_URL || process.env.POSTGRES_URL;
   if (!value) throw new Error("DATABASE_URL is not configured");
   return value;
 }
@@ -13,7 +13,12 @@ export function db() {
 let schemaPromise: Promise<void> | null = null;
 
 export function ensureSchema() {
-  if (!schemaPromise) schemaPromise = initializeSchema();
+  if (!schemaPromise) {
+    schemaPromise = initializeSchema().catch((error) => {
+      schemaPromise = null;
+      throw error;
+    });
+  }
   return schemaPromise;
 }
 

@@ -18,10 +18,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: "sm" | "md";
 }
 
-export function Button({ variant = "secondary", size = "md", className, type = "button", ...props }: ButtonProps) {
+export function Button({ variant = "secondary", size = "md", className, type, ...props }: ButtonProps) {
   return (
     <button
-      type={type}
+      type={type ?? "button"}
       className={cn(
         "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/40 disabled:cursor-not-allowed disabled:opacity-40",
         size === "md" ? "h-9 px-3.5 text-sm" : "h-8 px-2.5 text-[13px]",

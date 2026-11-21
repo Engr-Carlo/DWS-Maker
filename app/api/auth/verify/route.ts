@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createSession, verifyEmailToken } from "@/lib/auth";
+import { createSession, normalizeEmail, verifyEmailCode } from "@/lib/auth";
 
-const verification = z.object({ token: z.string().min(20).max(200) });
+const verification = z.object({ email: z.email(), code: z.string().regex(/^\d{6}$/) });
 
 export async function POST(request: Request) {
   const parsed = verification.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "This verification link is invalid." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Enter the six-digit code from your email." }, { status: 400 });
 
-  const userId = await verifyEmailToken(parsed.data.token);
+  const userId = await verifyEmailCode(normalizeEmail(parsed.data.email), parsed.data.code);
   if (!userId) {
-    return NextResponse.json({ error: "This verification link is invalid or has expired." }, { status: 400 });
+    return NextResponse.json({ error: "The code is incorrect or has expired." }, { status: 400 });
   }
 
   await createSession(userId);

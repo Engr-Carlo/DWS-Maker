@@ -4,7 +4,7 @@ import { db, ensureSchema } from "./db";
 
 export const SESSION_COOKIE = "dws_session";
 const SESSION_DAYS = 30;
-const VERIFY_HOURS = 24;
+const VERIFY_MINUTES = 15;
 
 export interface AuthUser {
   id: string;
@@ -40,26 +40,30 @@ function digestVerificationToken(token: string) {
   return createHmac("sha256", secret).update(token).digest("hex");
 }
 
-export async function issueVerificationToken(userId: string) {
+export async function issueVerificationCode(userId: string) {
   await ensureSchema();
-  const token = randomBytes(32).toString("base64url");
-  const expiresAt = new Date(Date.now() + VERIFY_HOURS * 60 * 60 * 1000);
+  const code = String(randomBytes(4).readUInt32BE() % 1_000_000).padStart(6, "0");
+  const expiresAt = new Date(Date.now() + VERIFY_MINUTES * 60 * 1000);
   const sql = db();
   await sql`DELETE FROM email_verification_tokens WHERE user_id = ${userId}`;
   await sql`
     INSERT INTO email_verification_tokens (token_hash, user_id, expires_at)
-    VALUES (${digestVerificationToken(token)}, ${userId}, ${expiresAt.toISOString()})
+    VALUES (${digestVerificationToken(code)}, ${userId}, ${expiresAt.toISOString()})
   `;
-  return token;
+  return code;
 }
 
-export async function verifyEmailToken(token: string) {
+export async function verifyEmailCode(email: string, code: string) {
   await ensureSchema();
   const sql = db();
   const rows = await sql`
-    DELETE FROM email_verification_tokens
-    WHERE token_hash = ${digestVerificationToken(token)} AND expires_at > NOW()
-    RETURNING user_id
+    DELETE FROM email_verification_tokens t
+    USING users u
+    WHERE t.user_id = u.id
+      AND u.email = ${email}
+      AND t.token_hash = ${digestVerificationToken(code)}
+      AND t.expires_at > NOW()
+    RETURNING t.user_id
   `;
   const row = rows[0] as { user_id?: string } | undefined;
   if (!row?.user_id) return null;

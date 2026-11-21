@@ -54,7 +54,6 @@ access only its own schedule. Passwords are scrypt-hashed; verification and sess
 For local development or Vercel, copy `.env.example` to `.env.local` and set:
 
 - `DATABASE_URL` – the pooled Neon PostgreSQL connection string.
-- `APP_URL` – the public app URL used in email verification links.
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` – SMTP credentials.
 - `EMAIL_VERIFICATION_SECRET` – a long random secret used to HMAC verification tokens.
 
@@ -62,8 +61,8 @@ The database tables are created automatically on first use. Never commit real en
 
 ## Deploy
 
-Add the Neon integration in the Vercel project and confirm that `DATABASE_URL` is available to production. Add the SMTP,
-`APP_URL`, and `EMAIL_VERIFICATION_SECRET` variables in Vercel, then deploy normally. Gmail SMTP requires an app password.
+Add the Neon integration in the Vercel project and confirm that `DATABASE_URL` or `POSTGRES_URL` is available to production. Add the SMTP
+and `EMAIL_VERIFICATION_SECRET` variables in Vercel, then deploy normally. Gmail SMTP requires an app password.
 
 The campus background uses a public-domain photograph by Othanwiki2009 of the Pamantasan ng Cabuyao main building.
 
