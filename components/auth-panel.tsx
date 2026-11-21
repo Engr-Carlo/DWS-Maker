@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, LockKeyhole, Mail } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, LockKeyhole, Mail, PartyPopper } from "lucide-react";
 import Image from "next/image";
 import { Button, Field, inputClass } from "./ui";
 
@@ -36,6 +36,7 @@ export function AuthPanel({ initialMode = "login" }: { initialMode?: Mode }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [registered, setRegistered] = useState(false);
+  const [verified, setVerified] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -89,8 +90,8 @@ export function AuthPanel({ initialMode = "login" }: { initialMode?: Mode }) {
       });
       const body = await response.json() as { error?: string };
       if (!response.ok) throw new Error(body.error || "Verification failed. Please try again.");
-      router.replace("/app");
-      router.refresh();
+      setVerified(true);
+      setError("");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Verification failed. Please try again.");
     } finally {
@@ -138,7 +139,32 @@ export function AuthPanel({ initialMode = "login" }: { initialMode?: Mode }) {
             </div>
           </header>
 
-          {registered ? (
+          {verified ? (
+            <div className="relative overflow-hidden px-6 py-12 text-center">
+              <div className="celebration-confetti" aria-hidden="true">
+                {Array.from({ length: 12 }, (_, index) => <i key={index} />)}
+              </div>
+              <div className="mx-auto flex h-20 w-20 animate-[welcome-pop_.6s_ease-out_both] items-center justify-center rounded-full bg-emerald-100 text-emerald-700 shadow-[0_0_0_12px_rgba(209,250,229,.45)]">
+                <PartyPopper className="h-9 w-9" />
+              </div>
+              <p className="mt-8 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Email verified</p>
+              <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">Congratulations!</h2>
+              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-slate-600">
+                Your account is ready. Continue to your DWS workspace and start building your schedule.
+              </p>
+              <Button
+                type="button"
+                variant="primary"
+                className="mt-7 h-11 w-full"
+                onClick={() => {
+                  router.replace("/app");
+                  router.refresh();
+                }}
+              >
+                Start building my schedule
+              </Button>
+            </div>
+          ) : registered ? (
             <div className="px-6 py-10 text-center">
               <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-600" />
               <h2 className="mt-4 text-xl font-bold text-slate-950">Enter your verification code</h2>
