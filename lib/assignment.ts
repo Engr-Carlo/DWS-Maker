@@ -130,7 +130,8 @@ export function buildAssignment(state: DwsState, kind: SubjectKind): AssignmentM
       unplaced.push(subject);
       continue;
     }
-    (subject.component === "lab" ? labClasses : lecClasses).add(subject.id);
+    const preparationKey = `${subject.code.trim().toUpperCase()}\0${subject.section.trim().toUpperCase()}`;
+    (subject.component === "lab" ? labClasses : lecClasses).add(preparationKey);
     for (const group of groups) {
       const hours = (group.days.length * (group.end - group.start)) / 2;
       rows.push({

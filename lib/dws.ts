@@ -136,7 +136,15 @@ export function resolveBrush(brush: string, subjects: Subject[]): Resolved | nul
     const id = brush.slice("subject:".length);
     const subject = subjects.find((s) => s.id === id);
     if (!subject) return null;
-    return { category: subject.kind, title: subject.code.trim() || "Subject", subtitle: subject.section.trim() };
+    return {
+      category: subject.kind,
+      title: subject.code.trim() || "Subject",
+      subtitle: [
+        subject.section.trim(),
+        subject.component.toUpperCase(),
+        subject.room.trim(),
+      ].filter(Boolean).join(" · "),
+    };
   }
   if (brush.startsWith("activity:")) {
     const id = brush.slice("activity:".length) as CategoryId;

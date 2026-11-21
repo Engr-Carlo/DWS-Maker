@@ -35,6 +35,7 @@ import {
   hoursByCategory,
   isBlank,
   loadState,
+  newId,
   newSubject,
   resolveBrush,
   sanitizeState,
@@ -284,6 +285,32 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
     return subject.id;
   };
 
+  const splitSubject = (id: string): string => {
+    const source = state.subjects.find((subject) => subject.id === id);
+    if (!source) return id;
+    const partHours = Math.max(0.5, source.hours / 2);
+    const copyId = newId();
+    setState((current) => {
+      const original = current.subjects.find((subject) => subject.id === id);
+      if (!original) return current;
+      const duplicate: Subject = {
+        ...original,
+        id: copyId,
+        hours: partHours,
+        room: "",
+      };
+      return {
+        ...current,
+        subjects: current.subjects.map((subject) =>
+          subject.id === id ? { ...subject, hours: original.hours - partHours } : subject,
+        ).concat(duplicate),
+      };
+    });
+    setBrush(subjectBrush(copyId));
+    setPreviousBrush(subjectBrush(copyId));
+    return copyId;
+  };
+
   const updateSubject = (id: string, patch: Partial<Subject>) =>
     setState((s) => ({ ...s, subjects: s.subjects.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
 
@@ -506,6 +533,7 @@ function Workspace({ userEmail, approved, isAdmin }: { userEmail: string; approv
               onProfile={(patch: Partial<Profile>) => setState((s) => ({ ...s, profile: { ...s.profile, ...patch } }))}
               onSignoff={(patch: Partial<Signoff>) => setState((s) => ({ ...s, signoff: { ...s.signoff, ...patch } }))}
               onAddSubject={addSubject}
+              onSplitSubject={splitSubject}
               onUpdateSubject={updateSubject}
               onRemoveSubject={removeSubject}
             />

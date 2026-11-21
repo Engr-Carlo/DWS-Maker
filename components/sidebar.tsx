@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Check, ChevronDown, Pencil, Plus, Trash2 } from "lucide-react";
+import { Check, ChevronDown, CopyPlus, Pencil, Plus, Trash2 } from "lucide-react";
 import {
   ACTIVITY_IDS,
   CATEGORY_BY_ID,
@@ -25,6 +25,7 @@ interface SidebarProps {
   onProfile: (patch: Partial<Profile>) => void;
   onSignoff: (patch: Partial<Signoff>) => void;
   onAddSubject: () => string;
+  onSplitSubject: (id: string) => string;
   onUpdateSubject: (id: string, patch: Partial<Subject>) => void;
   onRemoveSubject: (id: string) => void;
 }
@@ -97,6 +98,7 @@ function SubjectRow({
   effectivityDate,
   onSelect,
   onToggleEdit,
+  onSplit,
   onUpdate,
   onRemove,
 }: {
@@ -107,6 +109,7 @@ function SubjectRow({
   effectivityDate: string;
   onSelect: () => void;
   onToggleEdit: () => void;
+  onSplit: () => void;
   onUpdate: (patch: Partial<Subject>) => void;
   onRemove: () => void;
 }) {
@@ -124,6 +127,9 @@ function SubjectRow({
             <span className="block truncate text-sm font-medium text-gray-900">
               {subject.code || "New subject"}
               {subject.section && <span className="font-normal text-gray-500"> · {subject.section}</span>}
+            </span>
+            <span className="block truncate text-[11px] text-gray-500">
+              {[subject.component.toUpperCase(), subject.room].filter(Boolean).join(" · ")}
             </span>
             <span className={cn("block text-xs", over ? "text-amber-700" : complete ? "text-green-700" : "text-gray-500")}>
               {complete ? (
@@ -227,13 +233,27 @@ function SubjectRow({
             </Field>
           </div>
 
+          <div className="rounded-lg border border-blue-100 bg-blue-50/70 px-3 py-2.5">
+            <p className="text-xs font-medium text-blue-900">Different rooms or lecture/lab components?</p>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="mt-2 w-full border-blue-200 bg-white text-blue-800 hover:bg-blue-50"
+              disabled={subject.hours < 1}
+              onClick={onSplit}
+            >
+              <CopyPlus className="h-3.5 w-3.5" /> Split into two parts
+            </Button>
+            <p className="mt-1.5 text-[11px] leading-4 text-blue-700">
+              Copies this subject and divides its hours equally. Current grid placements stay with the original part.
+            </p>
+          </div>
+
           <div className="flex items-center justify-between pt-1">
             <button type="button" onClick={onRemove} className="inline-flex items-center gap-1.5 text-[13px] font-medium text-red-600 hover:text-red-700">
               <Trash2 className="h-3.5 w-3.5" /> Delete subject
             </button>
-            <Button size="sm" variant="secondary" onClick={onToggleEdit}>
-              Done
-            </Button>
+            <Button size="sm" variant="secondary" onClick={onToggleEdit}>Done</Button>
           </div>
         </div>
       )}
@@ -241,7 +261,7 @@ function SubjectRow({
   );
 }
 
-export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubject, onUpdateSubject, onRemoveSubject }: SidebarProps) {
+export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubject, onSplitSubject, onUpdateSubject, onRemoveSubject }: SidebarProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const { profile, signoff, subjects, cells } = state;
   const placed = hoursBySubject(cells);
@@ -302,6 +322,10 @@ export function Sidebar({ state, brush, onBrush, onProfile, onSignoff, onAddSubj
                 effectivityDate={profile.effectivityDate}
                 onSelect={() => onBrush(subjectBrush(subject.id))}
                 onToggleEdit={() => setEditingId(editingId === subject.id ? null : subject.id)}
+                onSplit={() => {
+                  const id = onSplitSubject(subject.id);
+                  setEditingId(id);
+                }}
                 onUpdate={(patch) => onUpdateSubject(subject.id, patch)}
                 onRemove={() => {
                   onRemoveSubject(subject.id);
