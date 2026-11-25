@@ -137,8 +137,7 @@ function buildHeader(images: DocxImages) {
                 width: dxa(1690),
                 borders: noBorders,
                 children: [
-                  para("PNC:AF-FO-96", { align: AlignmentType.RIGHT, size: 14 }),
-                  para("rev.1 02122024", { align: AlignmentType.RIGHT, size: 14 }),
+                  para("PNC:HRMD-FO-47 rev. 2 01302026", { align: AlignmentType.RIGHT, size: 14 }),
                 ],
               }),
             ],
@@ -294,8 +293,8 @@ export function buildDocument(state: DwsState, images: DocxImages): Document {
     columnWidths: [5800, 4190],
     borders: tableNoBorders,
     rows: [
-      new TableRow({ children: [labelled("NAME:", profile.name, 5800), labelled("DEPT/OFFICE:", profile.department, 4190)] }),
-      new TableRow({ children: [labelled("POSITION TITLE:", profile.position, 5800), labelled("DESIGNATION:", profile.designation, 4190)] }),
+      new TableRow({ children: [labelled("NAME:", profile.name, 5800), labelled("POSITION TITLE:", profile.position, 4190)] }),
+      new TableRow({ children: [labelled("DEPT/OFFICE:", profile.department, 5800), labelled("DESIGNATION:", profile.designation, 4190)] }),
     ],
   });
 

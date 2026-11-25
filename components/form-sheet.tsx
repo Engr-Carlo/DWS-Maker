@@ -70,10 +70,8 @@ export function FormSheet({ state }: { state: DwsState }) {
           <div style={{ fontSize: 11, fontStyle: "italic", color: LETTERHEAD_GRAY }}>Human Resource Management Department</div>
           <div style={{ fontSize: 9, fontStyle: "italic", color: LETTERHEAD_GRAY }}>Katapatan Mutual Homes, Brgy. Banay-banay, City of Cabuyao, Laguna 4025</div>
         </div>
-        <div style={{ width: 70, alignSelf: "flex-start", textAlign: "right", fontSize: 8, lineHeight: 1.3 }}>
-          PNC:AF-FO-96
-          <br />
-          rev.1 02122024
+        <div style={{ width: 210, alignSelf: "flex-start", textAlign: "right", fontSize: 8, lineHeight: 1.3, whiteSpace: "nowrap" }}>
+          PNC:HRMD-FO-47 rev. 2 01302026
         </div>
       </div>
 
@@ -89,10 +87,10 @@ export function FormSheet({ state }: { state: DwsState }) {
           <b>NAME:</b> <u><b>{profile.name}</b></u>
         </div>
         <div>
-          <b>DEPT/OFFICE:</b> <u><b>{profile.department}</b></u>
+          <b>POSITION TITLE:</b> <u><b>{profile.position}</b></u>
         </div>
         <div>
-          <b>POSITION TITLE:</b> <u><b>{profile.position}</b></u>
+          <b>DEPT/OFFICE:</b> <u><b>{profile.department}</b></u>
         </div>
         <div>
           <b>DESIGNATION:</b> <u><b>{profile.designation}</b></u>
