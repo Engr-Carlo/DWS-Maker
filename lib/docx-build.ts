@@ -117,13 +117,13 @@ function buildHeader(images: DocxImages) {
     children: [
       new Table({
         width: dxa(CONTENT_WIDTH),
-        columnWidths: [1700, 6600, 1690],
+        columnWidths: [1690, 6610, 1690],
         borders: tableNoBorders,
         rows: [
           new TableRow({
             children: [
               new TableCell({
-                width: dxa(1700),
+                width: dxa(1690),
                 borders: noBorders,
                 verticalAlign: VerticalAlign.CENTER,
                 children: [

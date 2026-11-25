@@ -58,9 +58,9 @@ export function FormSheet({ state }: { state: DwsState }) {
         lineHeight: 1.25,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <Image src="/form/seal.png" alt="" width={152} height={193} unoptimized loading="eager" style={{ width: 70, height: "auto" }} />
-        <div style={{ flex: 1, textAlign: "center" }}>
+      <div style={{ position: "relative", height: 112 }}>
+        <Image src="/form/seal.png" alt="" width={152} height={193} unoptimized loading="eager" style={{ position: "absolute", left: 0, top: 8, width: 70, height: "auto" }} />
+        <div style={{ position: "absolute", left: "50%", top: 0, width: 520, transform: "translateX(-50%)", textAlign: "center" }}>
           <div style={{ fontSize: 11, color: LETTERHEAD_GRAY }}>Republic of the Philippines</div>
           <div style={{ fontFamily: 'var(--font-blackletter), "Old English Text MT", serif', fontSize: 25, fontWeight: 700, lineHeight: 1.05, color: LETTERHEAD_GREEN }}>
             Pamantasan ng Cabuyao
@@ -70,7 +70,7 @@ export function FormSheet({ state }: { state: DwsState }) {
           <div style={{ fontSize: 11, fontStyle: "italic", color: LETTERHEAD_GRAY }}>Human Resource Management Department</div>
           <div style={{ fontSize: 9, fontStyle: "italic", color: LETTERHEAD_GRAY }}>Katapatan Mutual Homes, Brgy. Banay-banay, City of Cabuyao, Laguna 4025</div>
         </div>
-        <div style={{ width: 210, alignSelf: "flex-start", textAlign: "right", fontSize: 8, lineHeight: 1.3, whiteSpace: "nowrap" }}>
+        <div style={{ position: "absolute", right: 0, top: 0, width: 210, textAlign: "right", fontSize: 8, lineHeight: 1.3, whiteSpace: "nowrap" }}>
           PNC:HRMD-FO-47 rev. 2 01302026
         </div>
       </div>
